@@ -1,5 +1,5 @@
 # CODIS_P5
-Práctica 5 de CODIS
+
 Se pide diseñar una aplicación distribuida que implemente un sistema de mensajería instantánea mediante java RMI. El servidor aceptará conexiones de múltiples clientes y, cada vez que se conecte uno nuevo, éste deberá realizar diversas acciones. En primer lugar deberá notificar al resto de clientes conectados que hay un nuevo cliente. Por otro lado, deberá informar al recién conectado de los clientes que en ese momento se encuentren en línea. De la misma forma, cuando un cliente se desconecte, se deberá de informar al resto de ese hecho.
 
 
