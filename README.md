@@ -23,3 +23,5 @@ c) Un servidor aceptando conexiones de múltiples clientes, en donde hay grupos 
  
 
 Se sobreentiende que el cliente debe de tener una interfaz gráfica con una funcionalidad mínima.
+
+()
