@@ -6,8 +6,9 @@ import java.util.ArrayList;
 
 public interface RMIClientInterface extends Remote {
 
-    public String getUsername();
-    public ArrayList<String> getPendingFriendshipRequests();
+    String getUsername() throws RemoteException;
+    ArrayList<String> getPendingFriendshipRequests() throws RemoteException;
+    public String getPasswordHash() throws RemoteException;
 
     void receiveMessage(String sender, String message) throws RemoteException;
     void notifyConnection(String newClient) throws RemoteException;

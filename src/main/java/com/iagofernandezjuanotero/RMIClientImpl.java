@@ -27,18 +27,19 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     }
 
     @Override
-    public String getUsername() {
+    public String getUsername()  throws RemoteException {
 
         return username;
     }
 
     @Override
-    public ArrayList<String> getPendingFriendshipRequests() {
+    public ArrayList<String> getPendingFriendshipRequests() throws RemoteException {
 
         return pendingFriendshipRequests;
     }
 
-    public String getPasswordHash() {
+    @Override
+    public String getPasswordHash() throws RemoteException {
 
         return passwordHash;
     }

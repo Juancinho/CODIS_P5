@@ -36,12 +36,15 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
             savedClients.put(name, rmiClientImpl);
         }
 
-        // Notificar a los clientes existentes sobre la nueva conexión
+        // Notifies the online users about the newly connected one
         for (RMIClientInterface c : connectedClients.values()) {
             if (!c.equals(client)) {
                 c.notifyConnection(name);
             }
         }
+
+        // Finally, prints data to server prompt
+        System.out.println("Se ha registrado el cliente '" + name + "'");
     }
 
     @Override
@@ -65,7 +68,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     }
 
     @Override
-    public boolean isUsernameTaken (String name) {
+    public boolean isUsernameTaken (String name)  throws RemoteException{
 
         return savedClients.containsKey(name);
     }
@@ -79,7 +82,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
     // One-line method to check if both hashes (using SHA256 encryption) match
     @Override
-    public boolean verifyPassword(String username, String password) {
+    public boolean verifyPassword(String username, String password)  throws RemoteException{
 
         return savedClients.get(username).getPasswordHash().equals(calcHashForGivenPassword(password));
     }

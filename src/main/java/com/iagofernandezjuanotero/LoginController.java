@@ -50,12 +50,19 @@ public class LoginController implements Initializable {
         } else if (!isPasswordValid()) {
             printErrorMessage("La contraseña no es válida");
             return;
-        } else if (!rmiServerImpl.isUsernameTaken(username)) {
-            printErrorMessage("No existe ningún usuario con ese nombre");
-            return;
-        } else if (!rmiServerImpl.verifyPassword(username, password)) {
-            printErrorMessage("La contraseña introducida no es correcta");
-            return;
+        } else {
+            try {
+                if (!rmiServerImpl.isUsernameTaken(username)) {
+                    printErrorMessage("No existe ningún usuario con ese nombre");
+                    return;
+                } else if (!rmiServerImpl.verifyPassword(username, password)) {
+                    printErrorMessage("La contraseña introducida no es correcta");
+                    return;
+                }
+            } catch (RemoteException e) {
+                System.out.println("Excepción de invocación remota: " + e.getMessage());
+                printErrorMessage("Invocación remota fallida");
+            }
         }
 
         try {
@@ -83,13 +90,21 @@ public class LoginController implements Initializable {
         } else if (!isPasswordValid()) {
             printErrorMessage("La contraseña no es válida");
             return;
-        } else if (rmiServerImpl.isUsernameTaken(username)) {
-            printErrorMessage("Ya existe un usuario con ese nombre");
-            return;
+        } else {
+            try {
+                if (rmiServerImpl.isUsernameTaken(username)) {
+                    printErrorMessage("Ya existe un usuario con ese nombre");
+                    return;
+                }
+            } catch (RemoteException e) {
+                System.out.println("Excepción de invocación remota: " + e.getMessage());
+                printErrorMessage("Invocación remota fallida");
+            }
         }
 
         try {
             rmiClientImpl = rmiServerImpl.createNewClient(username, password);
+            System.out.println("DATOS: " + rmiClientImpl.getUsername() + " | " + rmiClientImpl.getPasswordHash());
             rmiServerImpl.registerClient(username, password, rmiClientImpl);
 
             // User successfully registered in the app
