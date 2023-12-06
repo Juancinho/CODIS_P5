@@ -5,7 +5,8 @@ import java.rmi.RemoteException;
 
 public interface RMIServerInterface extends Remote {
 
-    void registerClient(String name, RMIClientInterface client) throws RemoteException;
+    void registerClient(String name, String password, RMIClientInterface client) throws RemoteException;
     void getClientToMessage(String sender, String receiver, String message) throws RemoteException;
     void unregisterClient(String name) throws RemoteException;
+    public boolean isUsernameTaken(String name);
 }

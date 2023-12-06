@@ -6,11 +6,28 @@ import java.rmi.Naming;
 
 public class RMIClient {
 
+    LoginController loginController;
+    MainController mainController;
+    RMIClientImpl rmiClientImpl;
+
     String hostName;
+
+    public void setControllers(LoginController loginController, MainController mainController) {
+
+        this.loginController = loginController;
+        this.mainController = mainController;
+    }
+
+    public RMIClient() {
+
+        // Nothing to do here, client is initialized before any data can be fetched
+    }
 
     public void run() {
 
-        try {
+
+
+        /*try {
 
             InputStreamReader is = new InputStreamReader(System.in);
             BufferedReader br = new BufferedReader(is);
@@ -42,8 +59,6 @@ public class RMIClient {
             }
         } catch (Exception e) {
             System.out.println("Excepción de envío de mensajes: " + e.getMessage());
-        }
+        }*/
     }
-
-    //public static void main(String args[]) {    }
 }

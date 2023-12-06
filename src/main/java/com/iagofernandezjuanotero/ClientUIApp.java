@@ -9,13 +9,28 @@ import javafx.stage.Stage;
 public class ClientUIApp extends Application {
 
     // Controllers and/or clients  (or server)
+
     RMIClient rmiClient;
+    RMIClientImpl rmiClientImpl;
     LoginController loginController;
+    MainController mainController;
 
     @Override
-    public void start (Stage mainStage) throws  Exception {
+    public void start (Stage mainStage) throws Exception {
 
-        //rmiClient = new RMIClient();
+        rmiClient = new RMIClient();
+
+        FXMLLoader mainFxmlLoader = new FXMLLoader(RMIClient.class.getResource("MainView.fxml"));
+        Scene mainScene = new Scene(mainFxmlLoader.load(), 800, 400);
+        mainStage.setTitle("Practica 6 | Aplicaciones P2P");
+        mainStage.setScene(mainScene);
+        mainStage.setResizable(false);
+        mainStage.setOnCloseRequest(event -> {
+            // TODO when exit button clicked
+            System.exit(0);
+        });
+        mainController = mainFxmlLoader.getController();
+        mainStage.show();
 
         FXMLLoader loginFxmlLoader = new FXMLLoader(RMIClient.class.getResource("LoginView.fxml"));
         Scene loginScene = new Scene(loginFxmlLoader.load(), 399, 205);
@@ -29,8 +44,10 @@ public class ClientUIApp extends Application {
         });
         loginController = loginFxmlLoader.getController();
         loginController.loseFocus();
-        loginStage.showAndWait();
+        loginStage.show();
 
-        // TODO Create the main view, then rely on RMIClient to maintain the program flow
+        // TODO Keep updating controllers/other instances without reference lost
+        rmiClient.setControllers(loginController, mainController);
+        rmiClient.run();
     }
 }

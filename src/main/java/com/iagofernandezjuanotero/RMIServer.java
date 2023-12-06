@@ -30,6 +30,8 @@ public class RMIServer {
             listRegistry(registryURL);
             System.out.println("El servidor está activo");
 
+            // Actively waits for clients
+
         } catch (Exception e) {
             System.out.println("Excepción en el servidor: " + e.getMessage());
         }

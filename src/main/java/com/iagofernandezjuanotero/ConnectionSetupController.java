@@ -9,7 +9,7 @@ import javafx.scene.text.Text;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class LoginController implements Initializable {
+public class ConnectionSetupController implements Initializable {
 
     @FXML
     private AnchorPane rootPane;
@@ -18,21 +18,20 @@ public class LoginController implements Initializable {
     private Text errorMessageText;
 
     @FXML
-    private TextField usernameTextField;
+    private TextField hostnameTextField;
 
     @FXML
-    private PasswordField passwordField;
+    private Spinner<Integer> portSpinner;
+
 
     private RMIServerImpl rmiServerImpl;
 
-    @FXML
-    public void onLoginButtonClick () {
-
-
-    }
+    private int port;
 
     @FXML
-    public void onRegisterButtonClick () {
+    public void onConnectButtonClick () {
+
+        port = portSpinner.getValue();
     }
 
     @FXML
@@ -44,14 +43,14 @@ public class LoginController implements Initializable {
 
     private boolean isUsernameValid() {
 
-        String username = usernameTextField.getText();
+        String username = hostnameTextField.getText();
 
         return !username.isEmpty();
     }
 
     private boolean isPasswordValid() {
 
-        String password = passwordField.getText();
+        String password = hostnameTextField.getText();
 
         return !password.isEmpty();
     }
