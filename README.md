@@ -24,4 +24,17 @@ c) Un servidor aceptando conexiones de múltiples clientes, en donde hay grupos 
 
 Se sobreentiende que el cliente debe de tener una interfaz gráfica con una funcionalidad mínima.
 
-()
+
+
+
+
+
+#-------------------------------------(borrar esto antes de entregar)-------------------------------------#
+
+RECORDATORIOS:
+
+Instalar SceneBuilder para las interfaces gráficas
+El jdk está a la versión 19 (19.0.2, la de las repos de Ubuntu), para todo el proyecto
+La estructura del proyecto la tuve que cambiar bastante para seguir el patrón MVC de JavaFX (si puedes échale un vistazo, que igual se me pasó algo)
+Hay que poner el "Allow multiple instances" en ajustes del proyecto para poder ejecutar varios clientes a la vez
+

@@ -1,5 +1,8 @@
-import java.io.*;
-import java.rmi.*;
+package com.iagofernandezjuanotero;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.rmi.Naming;
 
 public class Cliente {
 

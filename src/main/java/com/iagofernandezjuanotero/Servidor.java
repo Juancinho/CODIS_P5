@@ -1,9 +1,12 @@
-import java.rmi.*;
+package com.iagofernandezjuanotero;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.net.*;
-import java.io.*;
 
 public class Servidor {
     public static void main(String args[]) {
