@@ -13,5 +13,4 @@ public interface RMIClientInterface extends Remote {
     void notifyConnection(String newClient) throws RemoteException;
     void notifyDisconnection(String disconnectedClient) throws RemoteException;
     void sendMessage(String receiver, String message) throws RemoteException;
-    boolean verifyPassword(String password, byte[] salt);
 }

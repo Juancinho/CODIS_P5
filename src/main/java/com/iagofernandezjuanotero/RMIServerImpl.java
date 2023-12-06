@@ -2,6 +2,8 @@ package com.iagofernandezjuanotero;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +32,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
         // Adds the newly created client to the database (if it is not yet there)
         if (!savedClients.containsKey(name)) {
-            RMIClientImpl rmiClientImpl = new RMIClientImpl(name, password, salt, this);
+            RMIClientImpl rmiClientImpl = new RMIClientImpl(name, calcHashForGivenPassword(password), this);
             savedClients.put(name, rmiClientImpl);
         }
 
@@ -65,13 +67,39 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     @Override
     public boolean isUsernameTaken (String name) {
 
-        for (RMIClientImpl c: savedClients.values()) {
-            if (c.getUsername().equals(name)) {
-                return true;
+        return savedClients.containsKey(name);
+    }
+
+    // Not compulsory but highly recommended method to preserve encapsulation and security in encrypted passwords
+    @Override
+    public RMIClientImpl createNewClient(String username, String password) throws RemoteException {
+
+        return new RMIClientImpl(username, calcHashForGivenPassword(password), this);
+    }
+
+    // One-line method to check if both hashes (using SHA256 encryption) match
+    @Override
+    public boolean verifyPassword(String username, String password) {
+
+        return savedClients.get(username).getPasswordHash().equals(calcHashForGivenPassword(password));
+    }
+
+    private String calcHashForGivenPassword(String password) {
+
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(salt);
+            byte[] bytes = md.digest(password.getBytes());
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
             }
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Excepción en la conversión de hash de contraseñas: " + e.getMessage());
         }
 
-        return false;
+        return sb.toString();
     }
 
     // For password encryption purposes

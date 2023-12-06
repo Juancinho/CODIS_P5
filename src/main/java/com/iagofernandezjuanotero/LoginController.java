@@ -1,12 +1,15 @@
 package com.iagofernandezjuanotero;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
@@ -24,15 +27,88 @@ public class LoginController implements Initializable {
     private PasswordField passwordField;
 
     private RMIServerImpl rmiServerImpl;
+    private RMIClientImpl rmiClientImpl;
 
-    @FXML
-    public void onLoginButtonClick () {
+    public void setRmiServerImpl(RMIServerImpl rmiServerImpl) {
 
+        this.rmiServerImpl = rmiServerImpl;
+    }
 
+    public void setRmiClientImpl(RMIClientImpl rmiClientImpl) {
+        this.rmiClientImpl = rmiClientImpl;
     }
 
     @FXML
-    public void onRegisterButtonClick () {
+    public void onLoginButtonClick (ActionEvent event) {
+
+        String username = usernameTextField.getText();
+        String password = passwordField.getText();
+
+        if (!isUsernameValid()) {
+            printErrorMessage("El nombre de usuario no es válido");
+            return;
+        } else if (!isPasswordValid()) {
+            printErrorMessage("La contraseña no es válida");
+            return;
+        } else if (!rmiServerImpl.isUsernameTaken(username)) {
+            printErrorMessage("No existe ningún usuario con ese nombre");
+            return;
+        } else if (!rmiServerImpl.verifyPassword(username, password)) {
+            printErrorMessage("La contraseña introducida no es correcta");
+            return;
+        }
+
+        try {
+            rmiClientImpl = rmiServerImpl.createNewClient(username, password);
+            rmiServerImpl.registerClient(username, password, rmiClientImpl);
+
+            // User successfully logged in to the app
+            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+            stage.close();
+        } catch (RemoteException e) {
+            System.out.println("Excepción de invocación remota: " + e.getMessage());
+            printErrorMessage("Invocación remota fallida");
+        }
+    }
+
+    @FXML
+    public void onRegisterButtonClick (ActionEvent event) {
+
+        String username = usernameTextField.getText();
+        String password = passwordField.getText();
+
+        if (!isUsernameValid()) {
+            printErrorMessage("El nombre de usuario no es válido");
+            return;
+        } else if (!isPasswordValid()) {
+            printErrorMessage("La contraseña no es válida");
+            return;
+        } else if (rmiServerImpl.isUsernameTaken(username)) {
+            printErrorMessage("Ya existe un usuario con ese nombre");
+            return;
+        }
+
+        try {
+            rmiClientImpl = rmiServerImpl.createNewClient(username, password);
+            rmiServerImpl.registerClient(username, password, rmiClientImpl);
+
+            // User successfully registered in the app
+            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+            stage.close();
+        } catch (RemoteException e) {
+            System.out.println("Excepción de invocación remota: " + e.getMessage());
+            printErrorMessage("Invocación remota fallida");
+        }
+    }
+
+    @FXML
+    private void printErrorMessage(String message) {
+
+        errorMessageText.setText(message);
+
+        if(!errorMessageText.isVisible()) {
+            errorMessageText.setVisible(true);
+        }
     }
 
     @FXML

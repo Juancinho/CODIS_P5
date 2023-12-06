@@ -7,23 +7,23 @@ import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInterface, Serializable {
+public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInterface {
 
     private final String username;
     private final ArrayList<String> pendingFriendshipRequests;
     private final RMIServerInterface server;
     private final String passwordHash;
 
-    public RMIClientImpl(String username, String password, byte[] salt, RMIServerInterface server) throws RemoteException {
+    public RMIClientImpl(String username, String passwordHash, RMIServerInterface server) throws RemoteException {
 
         super();
 
         this.username = username;
-        passwordHash = calcHashForGivenPassword(password, salt);
+        this.passwordHash = passwordHash;
         pendingFriendshipRequests = new ArrayList<>();
         this.server = server;
 
-        server.registerClient(username, password, this);
+        server.registerClient(username, passwordHash, this);
     }
 
     @Override
@@ -36,6 +36,11 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     public ArrayList<String> getPendingFriendshipRequests() {
 
         return pendingFriendshipRequests;
+    }
+
+    public String getPasswordHash() {
+
+        return passwordHash;
     }
 
     @Override
@@ -60,32 +65,6 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     public void sendMessage(String receiver, String message) throws RemoteException {
 
         server.getClientToMessage(username, receiver, message);
-    }
-
-    @Override
-    public boolean verifyPassword(String password, byte[] salt) {
-
-        String hashForGivenPassword = calcHashForGivenPassword(password, salt);
-
-        return hashForGivenPassword.equals(passwordHash);
-    }
-
-    private String calcHashForGivenPassword(String password, byte[] salt) {
-
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(salt);
-            byte[] bytes = md.digest(password.getBytes());
-            for (byte b : bytes) {
-                sb.append(String.format("%02x", b));
-            }
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("Excepción en la conversión de hash de contraseñas: " + e.getMessage());
-        }
-
-        return sb.toString();
     }
 
     /*
