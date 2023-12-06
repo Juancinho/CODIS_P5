@@ -6,7 +6,9 @@ import java.rmi.Naming;
 
 public class RMIClient {
 
-    public static void main(String args[]) {
+    String hostName;
+
+    public void run() {
 
         try {
 
@@ -26,12 +28,9 @@ public class RMIClient {
             String registryURL = "rmi://" + hostName + ":" + portNum + "/messagingApp";
             RMIServerInterface rmiServerInterface = (RMIServerInterface) Naming.lookup(registryURL);
 
-            System.out.print("Introduce tu nombre: ");
-            String name = br.readLine();
+            RMIClientImpl rmiClientImpl = new RMIClientImpl(hostName, "password", rmiServerInterface);
 
-            RMIClientImpl rmiClientImpl = new RMIClientImpl(name, rmiServerInterface);
-
-            System.out.println("El cliente " + name + " está listo. Puedes empezar a chatear.");
+            System.out.println("El cliente " + hostName + " está listo. Puedes empezar a chatear.");
 
             while (true) {
                 System.out.print("Destinatario: ");
@@ -45,4 +44,6 @@ public class RMIClient {
             System.out.println("Excepción de envío de mensajes: " + e.getMessage());
         }
     }
+
+    //public static void main(String args[]) {    }
 }

@@ -42,3 +42,8 @@ La estructura del proyecto la tuve que cambiar bastante para seguir el patrón M
 Hay que poner el "Allow multiple instances" en ajustes del proyecto para poder ejecutar varios clientes a la vez
 
 También hacen falta librerías externas para JavaFX, pero debería instalarlas automáticamente el gestor de Maven
+
+
+EN PROCESO:
+
+Hay que ver bien cómo hacer la base de datos de clientes ya existentes (en el servidor), para el sistema de registro/login

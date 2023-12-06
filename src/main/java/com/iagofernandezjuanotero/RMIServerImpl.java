@@ -8,11 +8,13 @@ import java.util.Map;
 public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInterface {
 
     private final Map<String, RMIClientInterface> connectedClients;
+    private final Map<String, RMIClientInterface> savedClients;
 
     public RMIServerImpl() throws RemoteException {
 
         super();
-        this.connectedClients = new HashMap<>();
+        connectedClients = new HashMap<>();
+        savedClients = new HashMap<>();
     }
 
     @Override
@@ -29,7 +31,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     }
 
     @Override
-    public void sendMessage(String sender, String receiver, String message) throws RemoteException {
+    public void getClientToMessage(String sender, String receiver, String message) throws RemoteException {
 
         RMIClientInterface receiverClient = connectedClients.get(receiver);
         if (receiverClient != null) {
