@@ -8,46 +8,53 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-public class Servidor {
+public class RMIServer {
     public static void main(String args[]) {
+
         InputStreamReader is = new InputStreamReader(System.in);
         BufferedReader br = new BufferedReader(is);
         String portNum, registryURL;
+
         try {
-            System.out.println("Enter the RMI registry port number:");
+
+            System.out.println("Introduce el puerto para el registro RMI: ");
             portNum = (br.readLine()).trim();
-            int RMIPortNum = Integer.parseInt(portNum);
-            startRegistry(RMIPortNum);
+            int RMIPort = Integer.parseInt(portNum);
+            startRegistry(RMIPort);
 
-            ServidorImpl exportedObj = new ServidorImpl();
-            registryURL = "rmi://localhost:" + portNum + "/servidor";
-            Naming.rebind(registryURL, exportedObj);
+            RMIServerImpl rmiServerImpl = new RMIServerImpl();
+            registryURL = "rmi://localhost:" + portNum + "/messagingApp";
+            Naming.rebind(registryURL, rmiServerImpl);
 
-            System.out.println("Servidor registrado. El registro actualmente contiene:");
+            System.out.println("Se ha registrado el servidor");
             listRegistry(registryURL);
-            System.out.println("Servidor listo.");
+            System.out.println("El servidor está activo");
 
-        } catch (Exception re) {
-            System.out.println("Exception in MensajeriaServidor.main: " + re);
+        } catch (Exception e) {
+            System.out.println("Excepción en el servidor: " + e.getMessage());
         }
     }
 
     private static void startRegistry(int RMIPortNum) throws RemoteException {
+
         try {
             Registry registry = LocateRegistry.getRegistry(RMIPortNum);
             registry.list();
         } catch (RemoteException e) {
-            System.out.println("RMI registry cannot be located at port " + RMIPortNum);
+            System.out.println("No se puede establecer el registro RMI en el puerto " + RMIPortNum);
             Registry registry = LocateRegistry.createRegistry(RMIPortNum);
-            System.out.println("RMI registry created at port " + RMIPortNum);
+            System.out.println("Se ha creado el registro RMI en el puerto " + RMIPortNum);
         }
     }
 
     private static void listRegistry(String registryURL) throws RemoteException, MalformedURLException {
-        System.out.println("Registry " + registryURL + " contains: ");
+
+        System.out.println("El registro '" + registryURL + "' contiene: ");
+
         String[] names = Naming.list(registryURL);
-        for (int i = 0; i < names.length; i++)
-            System.out.println(names[i]);
+        for (String name : names) {
+            System.out.println(name);
+        }
     }
 }
 

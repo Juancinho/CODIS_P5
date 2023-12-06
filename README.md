@@ -34,7 +34,11 @@ Se sobreentiende que el cliente debe de tener una interfaz gráfica con una func
 RECORDATORIOS:
 
 Instalar SceneBuilder para las interfaces gráficas
+
 El jdk está a la versión 19 (19.0.2, la de las repos de Ubuntu), para todo el proyecto
+
 La estructura del proyecto la tuve que cambiar bastante para seguir el patrón MVC de JavaFX (si puedes échale un vistazo, que igual se me pasó algo)
+
 Hay que poner el "Allow multiple instances" en ajustes del proyecto para poder ejecutar varios clientes a la vez
 
+También hacen falta librerías externas para JavaFX, pero debería instalarlas automáticamente el gestor de Maven
