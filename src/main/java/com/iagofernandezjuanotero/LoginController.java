@@ -60,9 +60,5 @@ public class LoginController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         errorMessageText.setVisible(false);
-
-        // Dodges IANA reserved ports (0-1023), and private (dynamic) ports (49152 and above)
-        SpinnerValueFactory<Integer> valueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(1024, 49151, 1099);
-        portSpinner.setValueFactory(valueFactory);
     }
 }
