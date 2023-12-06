@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="rootPane" prefHeight="205.0" prefWidth="399.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.iagofernandezjuanotero.LoginController">
+   <children>
+      <AnchorPane prefHeight="80.0" prefWidth="399.0" style="-fx-background-color: lightgray;">
+         <children>
+            <Text layoutX="28.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Introduce tu nombre de usuario y contraseña," />
+            <Text layoutX="28.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="asi como el puerto para la conexion:" />
+         </children>
+      </AnchorPane>
+      <TextField fx:id="usernameTextField" layoutX="23.0" layoutY="101.0" prefHeight="24.0" prefWidth="194.0" promptText="Nombre de usuario" />
+      <PasswordField fx:id="passwordField" layoutX="232.0" layoutY="101.0" prefHeight="24.0" prefWidth="143.0" promptText="Contraseña" />
+      <Button layoutX="315.0" layoutY="155.0" mnemonicParsing="false" onAction="#onLoginButtonClick" text="Entrar" />
+      <Button layoutX="214.0" layoutY="155.0" mnemonicParsing="false" onAction="#onRegisterButtonClick" text="Registrarse" />
+      <Text fx:id="errorMessageText" fill="RED" layoutX="279.0" layoutY="194.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Mensaje de error" AnchorPane.rightAnchor="26.66650390625">
+         <font>
+            <Font size="11.0" />
+         </font>
+      </Text>
+      <Spinner fx:id="portSpinner" editable="true" layoutX="120.0" layoutY="155.0" prefHeight="24.0" prefWidth="84.0" />
+   </children>
+</AnchorPane>
