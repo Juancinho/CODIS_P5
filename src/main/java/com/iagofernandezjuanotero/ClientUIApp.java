@@ -76,15 +76,11 @@ public class ClientUIApp extends Application {
         mainController.setRmiClientInterface(rmiClientInterface);
         mainController.updateFriendRequestChoiceBox();
         mainController.updateReceiverChoiceBox();
+        MainControllerData mainControllerData = mainController.getMainControllerData();
+        rmiClientInterface.setMainControllerData(mainControllerData);
         mainStage.show();
 
         // TODO Keep updating controllers/other instances without reference losses
-        String message = "SISTEMA: Los usuarios conectados son:";
-        for (int i = 0; i < rmiServerInterface.getOnlineClientsNames().size(); ++i) {
-            message += " '" + rmiServerInterface.getOnlineClientsNames().get(i) + "'";
-        }
-        mainController.printToConsole(message);
-
         rmiClient.setReferences(loginController, mainController, rmiServerInterface, rmiClientInterface);
         rmiClient.run();
 

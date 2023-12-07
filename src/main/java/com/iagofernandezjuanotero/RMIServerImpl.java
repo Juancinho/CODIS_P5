@@ -1,8 +1,5 @@
 package com.iagofernandezjuanotero;
 
-import java.net.MalformedURLException;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
@@ -15,7 +12,7 @@ import java.util.Map;
 public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInterface {
 
     private final Map<String, RMIClientInterface> connectedClients;
-    private final Map<String, UserData> userDatabase;
+    private final Map<String, ClientData> userDatabase;
     private final byte[] salt;
 
     public RMIServerImpl() throws RemoteException {
@@ -133,12 +130,13 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         @Override
         public void run() {
 
+            // Register the new client as online
             connectedClients.put(name, client);
 
             // Adds the newly created client to the database (if it is not there yet)
             if (!userDatabase.containsKey(name)) {
-                UserData userData = new UserData(name, passwordHash);
-                userDatabase.put(name, userData);
+                ClientData clientData = new ClientData(name, passwordHash);
+                userDatabase.put(name, clientData);
                 System.out.println("Se ha registrado el cliente '" + name + "' en la base de datos");
             }
 
@@ -150,6 +148,22 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
                     } catch (RemoteException e) {
                         System.out.println("Excepción de acceso remoto: " + e.getMessage());
                     }
+                }
+            }
+
+            // Informs the client on which clients are currently online
+            try {
+                String message = "SISTEMA: Los usuarios conectados son:";
+                for (int i = 0; i < getOnlineClientsNames().size(); ++i) {
+                    message += " '" + getOnlineClientsNames().get(i) + "'";
+                }
+                client.getMainControllerData().getMainController().printToConsole(message);
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+                try {
+                    client.getMainControllerData().getMainController().printToConsole("ERROR: No se ha podido obtener la lista de usuarios conectados");
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         }

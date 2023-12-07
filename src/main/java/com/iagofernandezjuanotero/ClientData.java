@@ -1,19 +1,18 @@
 package com.iagofernandezjuanotero;
 
 import java.io.Serializable;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
 // Serializable so it works properly with JavaRMI
 // Acts mostly like a placeholder of all attributes for a given client (when offline)
-public class UserData implements Serializable {
+// Requires Serializable interface to work with networking data transfers
+public class ClientData implements Serializable {
 
     private String username;
     private ArrayList<String> pendingFriendshipRequests;
     private String passwordHash;
 
-    public UserData(String username, String passwordHash) {
+    public ClientData(String username, String passwordHash) {
 
         this.username = username;
         this.passwordHash = passwordHash;

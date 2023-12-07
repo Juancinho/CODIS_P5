@@ -13,6 +13,6 @@ public interface RMIServerInterface extends Remote {
     boolean isUsernameTaken(String name) throws RemoteException;
     RMIClientInterface createNewClient(String username, String password) throws RemoteException;
     boolean verifyPassword(String username, String password) throws RemoteException;
-    public ArrayList<String> getOnlineClientsNames() throws RemoteException;
-    public ArrayList<String> getStoredClientsNames() throws RemoteException;
+    ArrayList<String> getOnlineClientsNames() throws RemoteException;
+    ArrayList<String> getStoredClientsNames() throws RemoteException;
 }

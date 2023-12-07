@@ -10,6 +10,7 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     private ArrayList<String> pendingFriendshipRequests;
     private RMIServerInterface server;
     private String passwordHash;
+    private MainControllerData mainControllerData;
 
     public RMIClientImpl(String username, String passwordHash, RMIServerInterface server) throws RemoteException {
 
@@ -22,6 +23,12 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
 
         server.registerClient(username, passwordHash, this);
         // This previous line may lead to infinite loop exceptions (work carefully)
+    }
+
+    @Override
+    public void setMainControllerData(MainControllerData mainControllerData) throws RemoteException {
+
+        this.mainControllerData = mainControllerData;
     }
 
     @Override
@@ -40,6 +47,12 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     public String getPasswordHash() throws RemoteException {
 
         return passwordHash;
+    }
+
+    @Override
+    public MainControllerData getMainControllerData() throws RemoteException {
+
+        return mainControllerData;
     }
 
     @Override
