@@ -1,13 +1,8 @@
 package com.iagofernandezjuanotero;
 
-import javafx.application.Platform;
-
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInterface {
 
@@ -27,15 +22,6 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
 
         server.registerClient(username, passwordHash, this);
         // This previous line may lead to infinite loop exceptions (work carefully)
-    }
-
-    // Useful when casting from client interface to implementation (initializes all attributes)
-    public void setParameters (String username, String passwordHash, RMIServerInterface server) {
-
-        this.username = username;
-        this.passwordHash = passwordHash;
-        pendingFriendshipRequests = new ArrayList<>();
-        this.server = server;
     }
 
     @Override

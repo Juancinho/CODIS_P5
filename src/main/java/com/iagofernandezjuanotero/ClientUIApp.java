@@ -79,7 +79,15 @@ public class ClientUIApp extends Application {
         mainStage.show();
 
         // TODO Keep updating controllers/other instances without reference losses
+        String message = "SISTEMA: Los usuarios conectados son:";
+        for (int i = 0; i < rmiServerInterface.getOnlineClientsNames().size(); ++i) {
+            message += " '" + rmiServerInterface.getOnlineClientsNames().get(i) + "'";
+        }
+        mainController.printToConsole(message);
+
         rmiClient.setReferences(loginController, mainController, rmiServerInterface, rmiClientInterface);
         rmiClient.run();
+
+        // Leaves the JavaFX thread to keep UI up
     }
 }

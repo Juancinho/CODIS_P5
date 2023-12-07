@@ -125,7 +125,7 @@ public class MainController implements Initializable {
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         // Prints to console that window is ready
-        printToConsole("(SISTEMA) Se ha inicializado el programa correctamente");
+        printToConsole("SISTEMA: Se ha inicializado el programa correctamente");
     }
 }
 

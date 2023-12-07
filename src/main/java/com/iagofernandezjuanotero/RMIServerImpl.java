@@ -1,5 +1,8 @@
 package com.iagofernandezjuanotero;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
@@ -29,21 +32,8 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     @Override
     public void registerClient(String name, String password, RMIClientInterface client) throws RemoteException {
 
-        connectedClients.put(name, client);
-
-        // Adds the newly created client to the database (if it is not there yet)
-        if (!userDatabase.containsKey(name)) {
-            UserData userData = new UserData(name, password);
-            userDatabase.put(name, userData);
-            System.out.println("Se ha registrado el cliente '" + name + "' en la base de datos");
-        }
-
-        // Notifies the online users about the newly connected one
-        for (RMIClientInterface c : connectedClients.values()) {
-            if (!c.equals(client)) {
-                c.notifyConnection(name);
-            }
-        }
+        ClientHandlerThread clientHandlerThread = new ClientHandlerThread(name, password, client);
+        clientHandlerThread.start();
     }
 
     @Override
@@ -67,7 +57,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     }
 
     @Override
-    public boolean isUsernameTaken (String name) throws RemoteException{
+    public boolean isUsernameTaken(String name) throws RemoteException{
 
         return userDatabase.containsKey(name);
     }
@@ -124,5 +114,44 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         random.nextBytes(salt);
 
         return salt;
+    }
+
+    private class ClientHandlerThread extends Thread {
+
+        private String name;
+        private String passwordHash;
+        private RMIClientInterface client;
+
+        // Custom thread that will handle a client (1 thread per client connection)
+        public ClientHandlerThread(String name, String password, RMIClientInterface client) {
+
+            this.name = name;
+            this.passwordHash = calcHashForGivenPassword(password);
+            this.client = client;
+        }
+
+        @Override
+        public void run() {
+
+            connectedClients.put(name, client);
+
+            // Adds the newly created client to the database (if it is not there yet)
+            if (!userDatabase.containsKey(name)) {
+                UserData userData = new UserData(name, passwordHash);
+                userDatabase.put(name, userData);
+                System.out.println("Se ha registrado el cliente '" + name + "' en la base de datos");
+            }
+
+            // Notifies the online users about the newly connected one
+            for (RMIClientInterface c : connectedClients.values()) {
+                if (!c.equals(client)) {
+                    try {
+                        c.notifyConnection(name);
+                    } catch (RemoteException e) {
+                        System.out.println("Excepción de acceso remoto: " + e.getMessage());
+                    }
+                }
+            }
+        }
     }
 }

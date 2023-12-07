@@ -22,8 +22,6 @@ public class RMIClient {
 
     public void run() {
 
-        System.out.println("CLIENTE??");
-
         /*try {
 
             InputStreamReader is = new InputStreamReader(System.in);
