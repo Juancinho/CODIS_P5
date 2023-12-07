@@ -5,13 +5,14 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInterface {
 
     private final Map<String, RMIClientInterface> connectedClients;
-    private final Map<String, RMIClientImpl> savedClients;
+    private final Map<String, UserData> userDatabase;
     private final byte[] salt;
 
     public RMIServerImpl() throws RemoteException {
@@ -19,21 +20,22 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         super();
 
         connectedClients = new HashMap<>();
-        savedClients = new HashMap<>();
+        userDatabase = new HashMap<>();
         salt = generateSalt();
     }
 
     // Note that this 'register' stands for simply accessing the app (not only creating new accounts)
-    // Anyway, this method stores the client if it does not exist yet
+    // Anyway, this method stores the client if it does not exist yet (so it does actually register new users to the server)
     @Override
     public void registerClient(String name, String password, RMIClientInterface client) throws RemoteException {
 
         connectedClients.put(name, client);
 
-        // Adds the newly created client to the database (if it is not yet there)
-        if (!savedClients.containsKey(name)) {
-            RMIClientImpl rmiClientImpl = new RMIClientImpl(name, calcHashForGivenPassword(password), this);
-            savedClients.put(name, rmiClientImpl);
+        // Adds the newly created client to the database (if it is not there yet)
+        if (!userDatabase.containsKey(name)) {
+            UserData userData = new UserData(name, password);
+            userDatabase.put(name, userData);
+            System.out.println("Se ha registrado el cliente '" + name + "' en la base de datos");
         }
 
         // Notifies the online users about the newly connected one
@@ -42,9 +44,6 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
                 c.notifyConnection(name);
             }
         }
-
-        // Finally, prints data to server prompt
-        System.out.println("Se ha registrado el cliente '" + name + "'");
     }
 
     @Override
@@ -68,23 +67,35 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     }
 
     @Override
-    public boolean isUsernameTaken (String name)  throws RemoteException{
+    public boolean isUsernameTaken (String name) throws RemoteException{
 
-        return savedClients.containsKey(name);
+        return userDatabase.containsKey(name);
     }
 
     // Not compulsory but highly recommended method to preserve encapsulation and security in encrypted passwords
     @Override
-    public RMIClientImpl createNewClient(String username, String password) throws RemoteException {
+    public RMIClientInterface createNewClient(String username, String password) throws RemoteException {
 
         return new RMIClientImpl(username, calcHashForGivenPassword(password), this);
     }
 
     // One-line method to check if both hashes (using SHA256 encryption) match
     @Override
-    public boolean verifyPassword(String username, String password)  throws RemoteException{
+    public boolean verifyPassword(String username, String password) throws RemoteException{
 
-        return savedClients.get(username).getPasswordHash().equals(calcHashForGivenPassword(password));
+        return userDatabase.get(username).getPasswordHash().equals(calcHashForGivenPassword(password));
+    }
+
+    @Override
+    public ArrayList<String> getOnlineClientsNames() throws RemoteException {
+
+        return new ArrayList<>(connectedClients.keySet());
+    }
+
+    @Override
+    public ArrayList<String> getStoredClientsNames() throws RemoteException {
+
+        return new ArrayList<>(userDatabase.keySet());
     }
 
     private String calcHashForGivenPassword(String password) {

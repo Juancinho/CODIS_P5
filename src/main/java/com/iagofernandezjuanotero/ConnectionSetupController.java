@@ -36,16 +36,21 @@ public class ConnectionSetupController implements Initializable {
         this.rmiServerInterface = rmiServerInterface;
     }
 
+    public RMIServerInterface getRmiServerInterface() {
+
+        return rmiServerInterface;
+    }
+
     @FXML
     public void onConnectButtonClick (ActionEvent event) {
 
-        String hostname = hostnameTextField.getText();
-        int port = portSpinner.getValue();
-
-        if (!isHostnameValid()) {
-            printErrorMessage("El nombre de host no es válido");
-            return;
+        String hostname;
+        if (hostnameTextField.getText().isEmpty()) {
+            hostname = "localhost";
+        } else {
+            hostname = hostnameTextField.getText();
         }
+        int port = portSpinner.getValue();
 
         String registryURL = "rmi://" + hostname + ":" + port + "/messagingApp";
         try {
@@ -81,13 +86,6 @@ public class ConnectionSetupController implements Initializable {
 
         // Cannot be set on initialize as drivers are not ready yet
         rootPane.requestFocus();
-    }
-
-    private boolean isHostnameValid() {
-
-        String hostname = hostnameTextField.getText();
-
-        return !hostname.isEmpty();
     }
 
     @Override

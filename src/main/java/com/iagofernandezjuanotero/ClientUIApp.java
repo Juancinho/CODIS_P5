@@ -3,7 +3,6 @@ package com.iagofernandezjuanotero;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class ClientUIApp extends Application {
@@ -12,8 +11,8 @@ public class ClientUIApp extends Application {
     RMIClient rmiClient;
 
     // Connection instances
-    RMIServerImpl rmiServerImpl;
-    RMIClientImpl rmiClientImpl;
+    RMIServerInterface rmiServerInterface;
+    RMIClientInterface rmiClientInterface;
 
     // Controllers
     ConnectionSetupController connectionSetupController;
@@ -24,8 +23,8 @@ public class ClientUIApp extends Application {
     public void start (Stage mainStage) throws Exception {
 
         rmiClient = new RMIClient();
-        rmiServerImpl = new RMIServerImpl();
-        //rmiClientImpl = new RMIClientImpl();
+        //rmiServerImpl = new RMIServerImpl();ç
+        // All implementation instances are initialized within controllers (or methods called by them)
 
         FXMLLoader connectionSetupLoader = new FXMLLoader(RMIClient.class.getResource("ConnectionSetupView.fxml"));
         Scene connectionSetupScene = new Scene(connectionSetupLoader.load(), 420, 218);
@@ -39,8 +38,9 @@ public class ClientUIApp extends Application {
         });*/
         connectionSetupController = connectionSetupLoader.getController();
         connectionSetupController.loseFocus();
-        connectionSetupController.setRmiServerInterface(rmiServerImpl);
+        //connectionSetupController.setRmiServerInterface(rmiServerImpl);
         connectionSetupStage.showAndWait();
+        rmiServerInterface = connectionSetupController.getRmiServerInterface();
 
         FXMLLoader loginFxmlLoader = new FXMLLoader(RMIClient.class.getResource("LoginView.fxml"));
         Scene loginScene = new Scene(loginFxmlLoader.load(), 441, 227);
@@ -54,24 +54,32 @@ public class ClientUIApp extends Application {
         });*/
         loginController = loginFxmlLoader.getController();
         loginController.loseFocus();
-        loginController.setRmiServerImpl(rmiServerImpl);
-        loginController.setRmiClientImpl(rmiClientImpl);
+        loginController.setRmiServerInterface(rmiServerInterface);
         loginStage.showAndWait();
 
+        rmiServerInterface = loginController.getRmiServerInterface();
+        rmiClientInterface = loginController.getRmiClientInterface();
+
         FXMLLoader mainFxmlLoader = new FXMLLoader(RMIClient.class.getResource("MainView.fxml"));
-        Scene mainScene = new Scene(mainFxmlLoader.load(), 800, 400);
-        mainStage.setTitle("Aplicaciones P2P");
+        Scene mainScene = new Scene(mainFxmlLoader.load(), 796, 529);
+        mainStage.setTitle("Aplicación P2P | " + rmiClientInterface.getUsername());
         mainStage.setScene(mainScene);
         mainStage.setResizable(false);
         mainStage.setOnCloseRequest(event -> {
             // TODO when exit button clicked
             System.exit(0);
         });
+        // TODO main functionality
         mainController = mainFxmlLoader.getController();
+        mainController.loseFocus();
+        mainController.setRmiServerInterface(rmiServerInterface);
+        mainController.setRmiClientInterface(rmiClientInterface);
+        mainController.updateFriendRequestChoiceBox();
+        mainController.updateReceiverChoiceBox();
         mainStage.show();
 
         // TODO Keep updating controllers/other instances without reference losses
-        rmiClient.setControllers(loginController, mainController);
+        rmiClient.setReferences(loginController, mainController, rmiServerInterface, rmiClientInterface);
         rmiClient.run();
     }
 }

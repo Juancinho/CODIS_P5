@@ -1,5 +1,7 @@
 package com.iagofernandezjuanotero;
 
+import javafx.application.Platform;
+
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -9,10 +11,10 @@ import java.security.NoSuchAlgorithmException;
 
 public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInterface {
 
-    private final String username;
-    private final ArrayList<String> pendingFriendshipRequests;
-    private final RMIServerInterface server;
-    private final String passwordHash;
+    private String username;
+    private ArrayList<String> pendingFriendshipRequests;
+    private RMIServerInterface server;
+    private String passwordHash;
 
     public RMIClientImpl(String username, String passwordHash, RMIServerInterface server) throws RemoteException {
 
@@ -24,10 +26,20 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
         this.server = server;
 
         server.registerClient(username, passwordHash, this);
+        // This previous line may lead to infinite loop exceptions (work carefully)
+    }
+
+    // Useful when casting from client interface to implementation (initializes all attributes)
+    public void setParameters (String username, String passwordHash, RMIServerInterface server) {
+
+        this.username = username;
+        this.passwordHash = passwordHash;
+        pendingFriendshipRequests = new ArrayList<>();
+        this.server = server;
     }
 
     @Override
-    public String getUsername()  throws RemoteException {
+    public String getUsername() throws RemoteException {
 
         return username;
     }
@@ -47,19 +59,19 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     @Override
     public void receiveMessage(String sender, String message) throws RemoteException {
 
-        System.out.println("Mensaje de " + sender + ": " + message);
+        System.out.println("Mensaje de '" + sender + "': " + message);
     }
 
     @Override
     public void notifyConnection(String newClient) throws RemoteException {
 
-        System.out.println("Se ha conectado " + newClient);
+        System.out.println("'" + newClient + "' se ha conectado");
     }
 
     @Override
     public void notifyDisconnection(String disconnectedClient) throws RemoteException {
 
-        System.out.println(disconnectedClient + " se ha desconectado");
+        System.out.println("'" + disconnectedClient + "' se ha desconectado");
     }
 
     @Override
@@ -67,35 +79,4 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
 
         server.getClientToMessage(username, receiver, message);
     }
-
-    /*
-    public static void main(String[] args) {
-
-        try {
-
-            Scanner scanner = new Scanner(System.in);
-
-            System.out.print("Ingresa tu nombre: ");
-            String name = scanner.nextLine();
-
-            RMIServerInterface server = (RMIServerInterface) Naming.lookup("//localhost/MessagingApp");
-            RMIClientImpl client = new RMIClientImpl(name, server);
-
-            System.out.println("RMIClient " + name + " listo. Puedes comenzar a chatear.");
-
-            while (true) {
-
-                System.out.print("Destinatario: ");
-                String destinatario = scanner.nextLine();
-                System.out.print("Mensaje: ");
-                String mensaje = scanner.nextLine();
-
-                client.sendMessage(destinatario, mensaje);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Excepción de envío de mensaje: " + e.getMessage());
-        }
-    }
-    */
 }

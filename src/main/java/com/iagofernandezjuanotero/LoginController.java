@@ -26,16 +26,27 @@ public class LoginController implements Initializable {
     @FXML
     private PasswordField passwordField;
 
-    private RMIServerImpl rmiServerImpl;
-    private RMIClientImpl rmiClientImpl;
+    private RMIServerInterface rmiServerInterface;
+    private RMIClientInterface rmiClientInterface;
 
-    public void setRmiServerImpl(RMIServerImpl rmiServerImpl) {
+    public void setRmiServerInterface(RMIServerInterface rmiServerInterface) {
 
-        this.rmiServerImpl = rmiServerImpl;
+        this.rmiServerInterface = rmiServerInterface;
     }
 
-    public void setRmiClientImpl(RMIClientImpl rmiClientImpl) {
-        this.rmiClientImpl = rmiClientImpl;
+    public RMIServerInterface getRmiServerInterface() {
+
+        return rmiServerInterface;
+    }
+
+    public void setRmiClientInterface(RMIClientInterface rmiClientInterface) {
+
+        this.rmiClientInterface = rmiClientInterface;
+    }
+
+    public RMIClientInterface getRmiClientInterface() {
+
+        return rmiClientInterface;
     }
 
     @FXML
@@ -52,10 +63,10 @@ public class LoginController implements Initializable {
             return;
         } else {
             try {
-                if (!rmiServerImpl.isUsernameTaken(username)) {
+                if (!rmiServerInterface.isUsernameTaken(username)) {
                     printErrorMessage("No existe ningún usuario con ese nombre");
                     return;
-                } else if (!rmiServerImpl.verifyPassword(username, password)) {
+                } else if (!rmiServerInterface.verifyPassword(username, password)) {
                     printErrorMessage("La contraseña introducida no es correcta");
                     return;
                 }
@@ -66,8 +77,7 @@ public class LoginController implements Initializable {
         }
 
         try {
-            rmiClientImpl = rmiServerImpl.createNewClient(username, password);
-            rmiServerImpl.registerClient(username, password, rmiClientImpl);
+            rmiClientInterface = rmiServerInterface.createNewClient(username, password);
 
             // User successfully logged in to the app
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
@@ -92,7 +102,7 @@ public class LoginController implements Initializable {
             return;
         } else {
             try {
-                if (rmiServerImpl.isUsernameTaken(username)) {
+                if (rmiServerInterface.isUsernameTaken(username)) {
                     printErrorMessage("Ya existe un usuario con ese nombre");
                     return;
                 }
@@ -103,9 +113,7 @@ public class LoginController implements Initializable {
         }
 
         try {
-            rmiClientImpl = rmiServerImpl.createNewClient(username, password);
-            System.out.println("DATOS: " + rmiClientImpl.getUsername() + " | " + rmiClientImpl.getPasswordHash());
-            rmiServerImpl.registerClient(username, password, rmiClientImpl);
+            rmiClientInterface = rmiServerInterface.createNewClient(username, password);
 
             // User successfully registered in the app
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();

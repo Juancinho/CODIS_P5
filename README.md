@@ -47,3 +47,5 @@ También hacen falta librerías externas para JavaFX, pero debería instalarlas 
 EN PROCESO:
 
 Hay que ver bien cómo hacer la base de datos de clientes ya existentes (en el servidor), para el sistema de registro/login
+
+Habría que evitar que un usuario se conecte si ya está conectado?

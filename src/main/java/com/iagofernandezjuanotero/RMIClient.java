@@ -1,21 +1,18 @@
 package com.iagofernandezjuanotero;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.rmi.Naming;
-
 public class RMIClient {
 
     LoginController loginController;
     MainController mainController;
-    RMIClientImpl rmiClientImpl;
+    RMIServerInterface rmiServerInterface;
+    RMIClientInterface rmiClientInterface;
 
-    String hostName;
-
-    public void setControllers(LoginController loginController, MainController mainController) {
+    public void setReferences(LoginController loginController, MainController mainController, RMIServerInterface rmiServerInterface, RMIClientInterface rmiClientInterface) {
 
         this.loginController = loginController;
         this.mainController = mainController;
+        this.rmiServerInterface = rmiServerInterface;
+        this.rmiClientInterface = rmiClientInterface;
     }
 
     public RMIClient() {
@@ -25,7 +22,7 @@ public class RMIClient {
 
     public void run() {
 
-
+        System.out.println("CLIENTE??");
 
         /*try {
 
