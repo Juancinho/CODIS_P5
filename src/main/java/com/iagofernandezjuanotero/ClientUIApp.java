@@ -60,6 +60,7 @@ public class ClientUIApp extends Application {
         rmiServerInterface = loginController.getRmiServerInterface();
         rmiClientInterface = loginController.getRmiClientInterface();
 
+
         FXMLLoader mainFxmlLoader = new FXMLLoader(RMIClient.class.getResource("MainView.fxml"));
         Scene mainScene = new Scene(mainFxmlLoader.load(), 796, 529);
         mainStage.setTitle("Aplicación P2P | " + rmiClientInterface.getUsername());
@@ -76,8 +77,8 @@ public class ClientUIApp extends Application {
         mainController.setRmiClientInterface(rmiClientInterface);
         mainController.updateFriendRequestChoiceBox();
         mainController.updateReceiverChoiceBox();
-        MainControllerData mainControllerData = mainController.getMainControllerData();
-        rmiClientInterface.setMainControllerData(mainControllerData);
+        rmiClientInterface.setMainController(mainController);
+        rmiServerInterface.registerClient(rmiClientInterface.getUsername(), rmiClientInterface.getPasswordHash(), rmiClientInterface);
         mainStage.show();
 
         // TODO Keep updating controllers/other instances without reference losses

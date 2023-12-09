@@ -27,9 +27,9 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     // Note that this 'register' stands for simply accessing the app (not only creating new accounts)
     // Anyway, this method stores the client if it does not exist yet (so it does actually register new users to the server)
     @Override
-    public void registerClient(String name, String password, RMIClientInterface client) throws RemoteException {
+    public void registerClient(String name, String passwordHash, RMIClientInterface client) throws RemoteException {
 
-        ClientHandlerThread clientHandlerThread = new ClientHandlerThread(name, password, client);
+        ClientHandlerThread clientHandlerThread = new ClientHandlerThread(name, passwordHash, client);
         clientHandlerThread.start();
     }
 
@@ -59,13 +59,6 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         return userDatabase.containsKey(name);
     }
 
-    // Not compulsory but highly recommended method to preserve encapsulation and security in encrypted passwords
-    @Override
-    public RMIClientInterface createNewClient(String username, String password) throws RemoteException {
-
-        return new RMIClientImpl(username, calcHashForGivenPassword(password), this);
-    }
-
     // One-line method to check if both hashes (using SHA256 encryption) match
     @Override
     public boolean verifyPassword(String username, String password) throws RemoteException{
@@ -85,7 +78,8 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         return new ArrayList<>(userDatabase.keySet());
     }
 
-    private String calcHashForGivenPassword(String password) {
+    @Override
+    public String calcHashForGivenPassword(String password) throws RemoteException {
 
         StringBuilder sb = new StringBuilder();
 
@@ -120,10 +114,10 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         private RMIClientInterface client;
 
         // Custom thread that will handle a client (1 thread per client connection)
-        public ClientHandlerThread(String name, String password, RMIClientInterface client) {
+        public ClientHandlerThread(String name, String passwordHash, RMIClientInterface client) throws RemoteException {
 
             this.name = name;
-            this.passwordHash = calcHashForGivenPassword(password);
+            this.passwordHash = passwordHash;
             this.client = client;
         }
 
@@ -157,11 +151,13 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
                 for (int i = 0; i < getOnlineClientsNames().size(); ++i) {
                     message += " '" + getOnlineClientsNames().get(i) + "'";
                 }
-                client.getMainControllerData().getMainController().printToConsole(message);
+                client.receiveMessage("threadcreador", "mensaje de prueba");
+                //client.getMainControllerData().getMainController().printToConsole(message);
             } catch (RemoteException e) {
                 System.out.println("Excepción de acceso remoto: " + e.getMessage());
                 try {
-                    client.getMainControllerData().getMainController().printToConsole("ERROR: No se ha podido obtener la lista de usuarios conectados");
+                    client.receiveMessage("threadcreador", "mensaje de error remoto");
+                    //client.getMainControllerData().getMainController().printToConsole("ERROR: No se ha podido obtener la lista de usuarios conectados");
                 } catch (RemoteException ex) {
                     throw new RuntimeException(ex);
                 }

@@ -14,16 +14,16 @@
             <Text layoutX="28.0" layoutY="37.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Introduce el nombre de usuario y contraseña para acceder:" />
          </children>
       </AnchorPane>
+      <Text layoutX="37.0" layoutY="108.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nombre de usuario:" />
       <TextField fx:id="usernameTextField" layoutX="180.0" layoutY="91.0" prefHeight="24.0" prefWidth="194.0" promptText="username" />
-      <Button layoutX="360.0" layoutY="186.0" mnemonicParsing="false" onAction="#onLoginButtonClick" text="Entrar" />
-      <Button layoutX="253.0" layoutY="186.0" mnemonicParsing="false" onAction="#onRegisterButtonClick" text="Registrarse" />
+      <Text layoutX="37.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Contraseña:" />
+      <PasswordField fx:id="passwordField" layoutX="132.0" layoutY="133.0" promptText="password" />
       <Text fx:id="errorMessageText" fill="RED" layoutX="126.0" layoutY="201.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Mensaje de error" AnchorPane.rightAnchor="200.66650390625">
          <font>
             <Font size="10.0" />
          </font>
       </Text>
-      <Text layoutX="37.0" layoutY="108.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nombre de usuario:" />
-      <Text layoutX="37.0" layoutY="150.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Contraseña:" />
-      <PasswordField fx:id="passwordField" layoutX="132.0" layoutY="133.0" promptText="password" />
+      <Button layoutX="253.0" layoutY="186.0" mnemonicParsing="false" onAction="#onRegisterButtonClick" text="Registrarse" />
+      <Button layoutX="360.0" layoutY="186.0" mnemonicParsing="false" onAction="#onLoginButtonClick" text="Entrar" />
    </children>
 </AnchorPane>

@@ -77,7 +77,8 @@ public class LoginController implements Initializable {
         }
 
         try {
-            rmiClientInterface = rmiServerInterface.createNewClient(username, password);
+            rmiClientInterface = new RMIClientImpl(username, rmiServerInterface.calcHashForGivenPassword(password), rmiServerInterface);
+            //rmiClientInterface = rmiServerInterface.createNewClient(username, password);
 
             // User successfully logged in to the app
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
@@ -113,7 +114,8 @@ public class LoginController implements Initializable {
         }
 
         try {
-            rmiClientInterface = rmiServerInterface.createNewClient(username, password);
+            rmiClientInterface = new RMIClientImpl(username, rmiServerInterface.calcHashForGivenPassword(password), rmiServerInterface);
+            //rmiClientInterface = rmiServerInterface.createNewClient(username, password);
 
             // User successfully registered in the app
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();

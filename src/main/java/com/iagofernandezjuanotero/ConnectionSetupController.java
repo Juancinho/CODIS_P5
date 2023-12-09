@@ -31,14 +31,14 @@ public class ConnectionSetupController implements Initializable {
 
     private RMIServerInterface rmiServerInterface;
 
-    public void setRmiServerInterface(RMIServerInterface rmiServerInterface) {
-
-        this.rmiServerInterface = rmiServerInterface;
-    }
-
     public RMIServerInterface getRmiServerInterface() {
 
         return rmiServerInterface;
+    }
+
+    public void setRmiServerInterface(RMIServerInterface rmiServerInterface) {
+
+        this.rmiServerInterface = rmiServerInterface;
     }
 
     @FXML

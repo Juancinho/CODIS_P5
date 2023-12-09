@@ -26,33 +26,31 @@ public class MainController implements Initializable, Serializable {
     // There are serialization problems with JavaFX components (they are more complex than average Java classes)
     // It seems compulsory to work with transient attributes and taking care of method calls
     @FXML
-    private AnchorPane rootPane;
+    private transient AnchorPane rootPane;
 
     @FXML
-    private ScrollPane scrollPane;
+    private transient ScrollPane scrollPane;
 
     @FXML
-    private TextField messageTextField;
+    private transient TextField messageTextField;
 
     @FXML
-    private ChoiceBox<String> friendRequestChoiceBox;
+    private transient ChoiceBox<String> friendRequestChoiceBox;
 
     @FXML
-    private ChoiceBox<String> receiverChoiceBox;
+    private transient ChoiceBox<String> receiverChoiceBox;
 
     @FXML
-    private TextFlow textFlow;
+    private transient TextFlow textFlow;
 
     private RMIServerInterface rmiServerInterface;
     private RMIClientInterface rmiClientInterface;
 
-    private MainControllerData mainControllerData;
     private static final int MAX_MESSAGES = 100;
 
     public void setRmiServerInterface(RMIServerInterface rmiServerInterface) {
 
         this.rmiServerInterface = rmiServerInterface;
-        mainControllerData.setRmiServerInterface(rmiServerInterface);
     }
 
     public RMIServerInterface getRmiServerInterface() {
@@ -63,17 +61,11 @@ public class MainController implements Initializable, Serializable {
     public void setRmiClientInterface(RMIClientInterface rmiClientInterface) {
 
         this.rmiClientInterface = rmiClientInterface;
-        mainControllerData.setRmiClientInterface(rmiClientInterface);
     }
 
     public RMIClientInterface getRmiClientInterface() {
 
         return rmiClientInterface;
-    }
-
-    MainControllerData getMainControllerData() {
-
-        return mainControllerData;
     }
 
     @FXML
@@ -96,25 +88,19 @@ public class MainController implements Initializable, Serializable {
     @FXML
     public void updateFriendRequestChoiceBox() throws RemoteException {
 
-        ArrayList<String> storedClients = rmiServerInterface.getStoredClientsNames();
-        ObservableList<String> observableStoredClients = FXCollections.observableArrayList(storedClients);
-        observableStoredClients.remove(rmiClientInterface.getUsername());
+        ObservableList<String> storedClients = FXCollections.observableArrayList(rmiServerInterface.getStoredClientsNames());
+        storedClients.remove(rmiClientInterface.getUsername());
 
-        friendRequestChoiceBox.setItems(observableStoredClients);
-
-        mainControllerData.setStoredClients(storedClients);
+        friendRequestChoiceBox.setItems(storedClients);
     }
 
     @FXML
     public void updateReceiverChoiceBox() throws RemoteException {
 
-        ArrayList<String> onlineClients = rmiServerInterface.getOnlineClientsNames();
-        ObservableList<String> observableOnlineClients = FXCollections.observableArrayList(onlineClients);
-        observableOnlineClients.remove(rmiClientInterface.getUsername());
+        ObservableList<String> onlineClients = FXCollections.observableArrayList(rmiServerInterface.getOnlineClientsNames());
+        onlineClients.remove(rmiClientInterface.getUsername());
 
-        receiverChoiceBox.setItems(observableOnlineClients);
-
-        mainControllerData.setOnlineClients(onlineClients);
+        receiverChoiceBox.setItems(onlineClients);
     }
 
     // Method that prints data in the console (both messages from/to other users or related to the program itself)
@@ -139,8 +125,6 @@ public class MainController implements Initializable, Serializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
-        mainControllerData = new MainControllerData(this, rmiServerInterface, rmiClientInterface);
 
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 

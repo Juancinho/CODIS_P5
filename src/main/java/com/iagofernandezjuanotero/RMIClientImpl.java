@@ -7,28 +7,22 @@ import java.util.ArrayList;
 public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInterface {
 
     private String username;
-    private ArrayList<String> pendingFriendshipRequests;
-    private RMIServerInterface server;
     private String passwordHash;
-    private MainControllerData mainControllerData;
+    private ArrayList<String> pendingFriendshipRequests;
+    private RMIServerInterface rmiServerInterface;
+    private MainController mainController;
 
-    public RMIClientImpl(String username, String passwordHash, RMIServerInterface server) throws RemoteException {
+    public RMIClientImpl(String username, String passwordHash, RMIServerInterface rmiServerInterface) throws RemoteException {
 
         super();
 
         this.username = username;
         this.passwordHash = passwordHash;
         pendingFriendshipRequests = new ArrayList<>();
-        this.server = server;
+        this.rmiServerInterface = rmiServerInterface;
 
-        server.registerClient(username, passwordHash, this);
+        //server.registerClient(username, passwordHash, this);
         // This previous line may lead to infinite loop exceptions (work carefully)
-    }
-
-    @Override
-    public void setMainControllerData(MainControllerData mainControllerData) throws RemoteException {
-
-        this.mainControllerData = mainControllerData;
     }
 
     @Override
@@ -49,16 +43,23 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
         return passwordHash;
     }
 
-    @Override
-    public MainControllerData getMainControllerData() throws RemoteException {
+    public MainController getMainController() {
 
-        return mainControllerData;
+        return mainController;
+    }
+
+    @Override
+    public void setMainController(MainController mainController) throws RemoteException {
+
+        this.mainController = mainController;
     }
 
     @Override
     public void receiveMessage(String sender, String message) throws RemoteException {
 
         System.out.println("Mensaje de '" + sender + "': " + message);
+        mainController.printToConsole("Mensaje de '" + sender + "': " + message);
+
     }
 
     @Override
@@ -76,6 +77,6 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     @Override
     public void sendMessage(String receiver, String message) throws RemoteException {
 
-        server.getClientToMessage(username, receiver, message);
+        rmiServerInterface.getClientToMessage(username, receiver, message);
     }
 }
