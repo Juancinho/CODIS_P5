@@ -1,11 +1,11 @@
 package com.iagofernandezjuanotero;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
@@ -17,7 +17,6 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 // Must be serializable because of transitivity to MainControllerData (which is indeed serializable for network transfers)
@@ -35,10 +34,13 @@ public class MainController implements Initializable, Serializable {
     private transient TextField messageTextField;
 
     @FXML
-    private transient ChoiceBox<String> friendRequestChoiceBox;
+    private ChoiceBox<String> pendingRequestsChoiceBox;
 
     @FXML
-    private transient ChoiceBox<String> receiverChoiceBox;
+    private transient TextField friendRequestText;
+
+    @FXML
+    private transient ComboBox<String> receiverComboBox;
 
     @FXML
     private transient TextFlow textFlow;
@@ -69,13 +71,73 @@ public class MainController implements Initializable, Serializable {
     }
 
     @FXML
-    void onFriendRequestButtonClick(ActionEvent event) {
+    void onAcceptButtonClick(ActionEvent event) throws RemoteException {
 
+        String requesterClient = pendingRequestsChoiceBox.getValue();
+
+        if (isValidUsername(requesterClient)) {
+
+            rmiServerInterface.acceptClientRequest(rmiClientInterface.getUsername(), requesterClient);
+        }
     }
 
     @FXML
-    void onSendButtonClick(ActionEvent event) {
+    void onRejectButtonClick(ActionEvent event) throws RemoteException {
 
+        String requesterClient = pendingRequestsChoiceBox.getValue();
+
+        if (isValidUsername(requesterClient)) {
+
+            rmiServerInterface.rejectClientRequest(rmiClientInterface.getUsername(), requesterClient);
+        }
+    }
+
+    @FXML
+    void onFriendRequestButtonClick(ActionEvent event) throws RemoteException {
+
+        String requestedClient = friendRequestText.getText();
+
+        if (isValidUsername(requestedClient)) {
+
+            if (rmiServerInterface.isUsernameTaken(requestedClient)) {
+
+                // If client has already an incoming friendship request, then simply adds the user
+                if (rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingSentFriendshipRequests().contains(requestedClient)) {
+                    rmiServerInterface.acceptClientRequest(requestedClient, rmiClientInterface.getUsername());
+                } else {
+                    rmiServerInterface.createClientRequest(requestedClient, rmiClientInterface.getUsername());
+                }
+            } else {
+                rmiClientInterface.printError("El usuario '" + requestedClient +"' no existe");
+            }
+        }
+    }
+
+    @FXML
+    void onSendButtonClick(ActionEvent event) throws RemoteException {
+
+        String receiver = receiverComboBox.getValue();
+        String message = messageTextField.getText();
+
+        if (isValidText(message) && isValidUsername(receiver)) {
+
+            if (rmiServerInterface.isUserOnline(receiver)) {
+                rmiServerInterface.getClientToMessage(receiver).receiveMessage(rmiClientInterface.getUsername(), message);
+                rmiClientInterface.sendMessage(receiver, message);
+            } else {
+                rmiClientInterface.printError("El usuario '" + receiver +"' no está conectado");
+            }
+        }
+    }
+
+    private boolean isValidText(String message) {
+
+        return message != null && !message.trim().isEmpty();
+    }
+
+    private boolean isValidUsername(String clientName) {
+
+        return clientName != null && !clientName.trim().isEmpty();
     }
 
     @FXML
@@ -86,21 +148,15 @@ public class MainController implements Initializable, Serializable {
     }
 
     @FXML
-    public void updateFriendRequestChoiceBox() throws RemoteException {
+    public void updatePendingRequestsChoiceBox() throws RemoteException {
 
-        ObservableList<String> storedClients = FXCollections.observableArrayList(rmiServerInterface.getStoredClientsNames());
-        storedClients.remove(rmiClientInterface.getUsername());
-
-        friendRequestChoiceBox.setItems(storedClients);
+        pendingRequestsChoiceBox.setItems(FXCollections.observableArrayList(rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingReceivedFriendshipRequests()));
     }
 
     @FXML
-    public void updateReceiverChoiceBox() throws RemoteException {
+    public void updateReceiverComboBox() throws RemoteException {
 
-        ObservableList<String> onlineClients = FXCollections.observableArrayList(rmiServerInterface.getOnlineClientsNames());
-        onlineClients.remove(rmiClientInterface.getUsername());
-
-        receiverChoiceBox.setItems(onlineClients);
+        receiverComboBox.setItems(FXCollections.observableArrayList(rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getAddedFriends()));
     }
 
     // Method that prints data in the console (both messages from/to other users or related to the program itself)
@@ -128,7 +184,7 @@ public class MainController implements Initializable, Serializable {
 
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        // Prints to console that window is ready
+        // Prints to console that the window is ready
         printToConsole("SISTEMA: Se ha inicializado el programa correctamente");
     }
 }

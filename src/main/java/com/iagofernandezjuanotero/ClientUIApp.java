@@ -75,10 +75,10 @@ public class ClientUIApp extends Application {
         mainController.loseFocus();
         mainController.setRmiServerInterface(rmiServerInterface);
         mainController.setRmiClientInterface(rmiClientInterface);
-        mainController.updateFriendRequestChoiceBox();
-        mainController.updateReceiverChoiceBox();
         rmiClientInterface.setMainController(mainController);
         rmiServerInterface.registerClient(rmiClientInterface.getUsername(), rmiClientInterface.getPasswordHash(), rmiClientInterface);
+        mainController.updatePendingRequestsChoiceBox();
+        mainController.updateReceiverComboBox();
         mainStage.show();
 
         // TODO Keep updating controllers/other instances without reference losses

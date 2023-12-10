@@ -69,6 +69,9 @@ public class LoginController implements Initializable {
                 } else if (!rmiServerInterface.verifyPassword(username, password)) {
                     printErrorMessage("La contraseña introducida no es correcta");
                     return;
+                } else if (rmiServerInterface.isUserOnline(username)) {
+                    printErrorMessage("El usuario ya está conectado");
+                    return;
                 }
             } catch (RemoteException e) {
                 System.out.println("Excepción de invocación remota: " + e.getMessage());

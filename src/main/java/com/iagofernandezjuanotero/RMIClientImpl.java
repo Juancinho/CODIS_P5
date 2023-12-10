@@ -1,5 +1,7 @@
 package com.iagofernandezjuanotero;
 
+import javafx.application.Platform;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -8,7 +10,6 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
 
     private String username;
     private String passwordHash;
-    private ArrayList<String> pendingFriendshipRequests;
     private RMIServerInterface rmiServerInterface;
     private MainController mainController;
 
@@ -18,7 +19,6 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
 
         this.username = username;
         this.passwordHash = passwordHash;
-        pendingFriendshipRequests = new ArrayList<>();
         this.rmiServerInterface = rmiServerInterface;
 
         //server.registerClient(username, passwordHash, this);
@@ -29,12 +29,6 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     public String getUsername() throws RemoteException {
 
         return username;
-    }
-
-    @Override
-    public ArrayList<String> getPendingFriendshipRequests() throws RemoteException {
-
-        return pendingFriendshipRequests;
     }
 
     @Override
@@ -57,26 +51,133 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     @Override
     public void receiveMessage(String sender, String message) throws RemoteException {
 
-        System.out.println("Mensaje de '" + sender + "': " + message);
-        mainController.printToConsole("Mensaje de '" + sender + "': " + message);
-
-    }
-
-    @Override
-    public void notifyConnection(String newClient) throws RemoteException {
-
-        System.out.println("'" + newClient + "' se ha conectado");
-    }
-
-    @Override
-    public void notifyDisconnection(String disconnectedClient) throws RemoteException {
-
-        System.out.println("'" + disconnectedClient + "' se ha desconectado");
+        Platform.runLater(() -> {
+            mainController.printToConsole("ENTRADA ('" + username + "' ← '" + sender + "'): " + message);
+        });
     }
 
     @Override
     public void sendMessage(String receiver, String message) throws RemoteException {
 
-        rmiServerInterface.getClientToMessage(username, receiver, message);
+        Platform.runLater(() -> {
+            mainController.printToConsole("SALIDA ('" + username + "' → '" + receiver + "'): " + message);
+        });
+    }
+
+    @Override
+    public void notifyConnection(String newClient, boolean isNewClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            try {
+                mainController.updateReceiverComboBox();
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+            }
+
+            mainController.printToConsole("SISTEMA: '" + newClient + "' se ha conectado");
+        });
+    }
+
+    @Override
+    public void notifyDisconnection(String disconnectedClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            try {
+                mainController.updateReceiverComboBox();
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+            }
+
+            mainController.printToConsole("SISTEMA: '" + disconnectedClient + "' se ha desconectado");
+        });
+    }
+
+    @Override
+    public void notifySentFriendRequest(String requestedClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            mainController.printToConsole("AMISTAD: Solicitud de amistad enviada correctamente a '" + requestedClient + "'");
+        });
+    }
+
+    @Override
+    public void notifyReceivedFriendRequest(String requesterClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            try {
+                mainController.updatePendingRequestsChoiceBox();
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+            }
+
+            mainController.printToConsole("AMISTAD: '" + requesterClient + "' ha solicitado ser tu amigo");
+        });
+    }
+
+    @Override
+    public void notifyAcceptedSentFriendRequest(String requestedClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            try {
+                mainController.updateReceiverComboBox();
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+            }
+
+            mainController.printToConsole("AMISTAD: '" + requestedClient + "' ha aceptado tu solicitud de amistad. Ahora sois amigos");
+        });
+    }
+
+    @Override
+    public void notifyAcceptedReceivedFriendRequest(String requesterClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            try {
+                mainController.updateReceiverComboBox();
+                mainController.updatePendingRequestsChoiceBox();
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+            }
+
+            mainController.printToConsole("AMISTAD: Has aceptado la solicitud de amistad de '" + requesterClient + "'. Ahora sois amigos");
+        });
+    }
+
+    @Override
+    public void notifyRejectedSentFriendRequest(String requestedClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            mainController.printToConsole("AMISTAD: '" + requestedClient + "' ha rechazado tu solicitud de amistad");
+        });
+    }
+
+    @Override
+    public void notifyRejectedReceivedFriendRequest(String requesterClient) throws RemoteException {
+
+        Platform.runLater(() -> {
+            try {
+                mainController.updatePendingRequestsChoiceBox();
+            } catch (RemoteException e) {
+                System.out.println("Excepción de acceso remoto: " + e.getMessage());
+            }
+
+            mainController.printToConsole("AMISTAD: Has rechazado la solicitud de amistad de '" + requesterClient + "'");
+        });
+    }
+
+    @Override
+    public void printInfo(String message) throws RemoteException {
+
+        Platform.runLater(() -> {
+            mainController.printToConsole("SISTEMA: " + message);
+        });
+    }
+
+    @Override
+    public void printError(String message) throws RemoteException {
+
+        Platform.runLater(() -> {
+            mainController.printToConsole("ERROR: " + message);
+        });
     }
 }
