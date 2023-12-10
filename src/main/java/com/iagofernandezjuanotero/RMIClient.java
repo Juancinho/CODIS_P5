@@ -69,6 +69,7 @@ public class RMIClient extends Application {
         mainController.updatePendingRequestsChoiceBox();
         mainController.updateReceiverComboBox();
 
+        mainController.printWhileOfflineMessages();
         mainStage.setOnCloseRequest(event -> {
             try {
                 rmiServerInterface.unregisterClient(rmiClientInterface.getUsername());

@@ -101,10 +101,10 @@ public class MainController implements Initializable, Serializable {
 
             if (rmiServerInterface.isUsernameTaken(requestedClient)) {
 
-                if (rmiClientInterface.getUsername().equals(requestedClient)) {
+                if (!rmiClientInterface.getUsername().equals(requestedClient)) {
 
                     // If client has already an incoming friendship request, then simply adds the user
-                    if (rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingSentFriendshipRequests().contains(requestedClient)) {
+                    if (rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingReceivedFriendshipRequests().contains(requestedClient)) {
                         rmiServerInterface.acceptClientRequest(requestedClient, rmiClientInterface.getUsername());
                     } else {
                         rmiServerInterface.createClientRequest(requestedClient, rmiClientInterface.getUsername());
@@ -128,7 +128,7 @@ public class MainController implements Initializable, Serializable {
         if (isValidText(message) && isValidUsername(receiver)) {
 
             if (rmiServerInterface.isUserOnline(receiver)) {
-                if (rmiClientInterface.getUsername().equals(receiver)) {
+                if (!rmiClientInterface.getUsername().equals(receiver)) {
                     rmiServerInterface.getClientToMessage(receiver).receiveMessage(rmiClientInterface.getUsername(), message);
                     rmiClientInterface.sendMessage(receiver, message);
                 } else {
@@ -186,6 +186,22 @@ public class MainController implements Initializable, Serializable {
         textFlow.getChildren().add(0, text);
         if (textFlow.getChildren().size() > MAX_MESSAGES) {
             textFlow.getChildren().remove(MAX_MESSAGES);
+        }
+    }
+
+    @FXML
+    public void printWhileOfflineMessages() throws RemoteException {
+
+        // Simple function that gets the messages received while offline and prints them locally
+        for (String message: rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getWhileOfflineMessageStack()) {
+
+            // Works similarly to printToConsole(), but without time stamp
+            Text text = new Text ("[OFFLINE] " + message + "\n");
+
+            textFlow.getChildren().add(0, text);
+            if (textFlow.getChildren().size() > MAX_MESSAGES) {
+                textFlow.getChildren().remove(MAX_MESSAGES);
+            }
         }
     }
 
