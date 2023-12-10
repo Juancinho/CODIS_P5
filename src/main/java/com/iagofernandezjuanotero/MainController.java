@@ -101,11 +101,17 @@ public class MainController implements Initializable, Serializable {
 
             if (rmiServerInterface.isUsernameTaken(requestedClient)) {
 
-                // If client has already an incoming friendship request, then simply adds the user
-                if (rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingSentFriendshipRequests().contains(requestedClient)) {
-                    rmiServerInterface.acceptClientRequest(requestedClient, rmiClientInterface.getUsername());
+                if (rmiClientInterface.getUsername().equals(requestedClient)) {
+
+                    // If client has already an incoming friendship request, then simply adds the user
+                    if (rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingSentFriendshipRequests().contains(requestedClient)) {
+                        rmiServerInterface.acceptClientRequest(requestedClient, rmiClientInterface.getUsername());
+                    } else {
+                        rmiServerInterface.createClientRequest(requestedClient, rmiClientInterface.getUsername());
+                    }
+
                 } else {
-                    rmiServerInterface.createClientRequest(requestedClient, rmiClientInterface.getUsername());
+                    rmiClientInterface.printError("No puedes enviarte una solicitud de amistad a ti mismo");
                 }
             } else {
                 rmiClientInterface.printError("El usuario '" + requestedClient +"' no existe");
@@ -122,8 +128,12 @@ public class MainController implements Initializable, Serializable {
         if (isValidText(message) && isValidUsername(receiver)) {
 
             if (rmiServerInterface.isUserOnline(receiver)) {
-                rmiServerInterface.getClientToMessage(receiver).receiveMessage(rmiClientInterface.getUsername(), message);
-                rmiClientInterface.sendMessage(receiver, message);
+                if (rmiClientInterface.getUsername().equals(receiver)) {
+                    rmiServerInterface.getClientToMessage(receiver).receiveMessage(rmiClientInterface.getUsername(), message);
+                    rmiClientInterface.sendMessage(receiver, message);
+                } else {
+                    rmiClientInterface.printError("No puedes enviarte un mensaje a ti mismo");
+                }
             } else {
                 rmiClientInterface.printError("El usuario '" + receiver +"' no está conectado");
             }

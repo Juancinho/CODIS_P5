@@ -44,10 +44,14 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
         connectedClients.remove(name);
 
-        // Notificar a los clientes existentes sobre la desconexión
-        for (RMIClientInterface c : connectedClients.values()) {
-            c.notifyDisconnection(name);
+        // Notifies the client friends about the disconnection
+        for (String client: connectedClients.keySet()) {
+            if (isFriend(client, name)) {
+                getClientToMessage(client).notifyDisconnection(name);
+            }
         }
+
+        System.out.println("-> '" + name + "' se ha desconectado");
     }
 
     @Override
@@ -96,7 +100,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         userDatabase.get(requestedClient).removePendingRequest(requesterClient);
         userDatabase.get(requesterClient).removeSentPendingRequest(requestedClient);
 
-        if (isUserOnline(requestedClient)) {
+        if (isUserOnline(requesterClient)) {
 
             connectedClients.get(requesterClient).notifyRejectedSentFriendRequest(requestedClient);
             connectedClients.get(requestedClient).notifyRejectedReceivedFriendRequest(requesterClient);
@@ -118,7 +122,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         userDatabase.get(requestedClient).addFriend(requesterClient);
         userDatabase.get(requesterClient).addFriend(requestedClient);
 
-        if (isUserOnline(requestedClient)) {
+        if (isUserOnline(requesterClient)) {
 
             connectedClients.get(requesterClient).notifyAcceptedSentFriendRequest(requestedClient);
             connectedClients.get(requestedClient).notifyAcceptedReceivedFriendRequest(requesterClient);
@@ -221,11 +225,11 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
             if (!userDatabase.containsKey(name)) {
                 ClientData clientData = new ClientData(name, passwordHash);
                 userDatabase.put(name, clientData);
-                System.out.println("Se ha registrado el cliente '" + name + "' en la base de datos");
+                System.out.println("[NUEVO] Se ha registrado el cliente '" + name + "' en la base de datos");
                 isNewClient = true;
             }
 
-            // Notifies the online users about the newly connected one
+            // Notifies the online friends about the newly connected one
             for (String username: connectedClients.keySet()) {
                 try {
                     if (!username.equals(name)) {
@@ -238,9 +242,8 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
                 }
             }
 
-            // Informs the client on which clients are currently online
+            // Informs the client on which friends are currently online
             try {
-
                 boolean someoneOnline = false;
                 String message = "Tus amigos conectados son:";
                 for (int i = 0; i < getOnlineClientsNames().size(); ++i) {
@@ -265,6 +268,8 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
                     System.out.println("Error de acceso remoto: " + ex.getMessage());
                 }
             }
+
+            System.out.println("-> '" + name + "' se ha conectado");
         }
     }
 }

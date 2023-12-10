@@ -18,6 +18,7 @@ public class RMIServer {
 
         try {
 
+            System.out.println("\n  *** SERVIDOR RMI ***  \n\n");
             System.out.println("Introduce el puerto para el registro RMI: ");
             portNum = (br.readLine()).trim();
             int RMIPortNum = Integer.parseInt(portNum);
@@ -28,7 +29,7 @@ public class RMIServer {
             Naming.rebind(registryURL, rmiServerImpl);
 
             //listRegistry(registryURL);
-            System.out.println("El servidor está activo. Esperando clientes...");
+            System.out.println("\nEl servidor está activo. Esperando clientes...\n");
 
             // Actively waits for clients
 

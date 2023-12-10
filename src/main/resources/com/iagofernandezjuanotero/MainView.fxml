@@ -12,22 +12,22 @@
    <children>
       <AnchorPane prefHeight="58.0" prefWidth="796.0" style="-fx-background-color: lightgray;">
          <children>
-            <TextField fx:id="friendRequestText" layoutX="466.0" layoutY="17.0" />
-            <Button layoutX="643.0" layoutY="17.0" mnemonicParsing="false" onAction="#onFriendRequestButtonClick" text="Solicitar amistad" />
             <ChoiceBox fx:id="pendingRequestsChoiceBox" layoutX="21.0" layoutY="17.0" prefHeight="24.0" prefWidth="167.0" />
             <Button layoutX="196.0" layoutY="17.0" mnemonicParsing="false" onAction="#onAcceptButtonClick" text="Aceptar" />
             <Button layoutX="271.0" layoutY="17.0" mnemonicParsing="false" onAction="#onRejectButtonClick" text="Rechazar" />
-         </children></AnchorPane>
-      <AnchorPane layoutY="461.0" prefHeight="68.0" prefWidth="796.0" style="-fx-background-color: lightgray;">
-         <children>
-            <ComboBox fx:id="receiverComboBox" editable="true" layoutX="552.0" layoutY="22.0" prefWidth="150.0" />
+            <TextField fx:id="friendRequestText" layoutX="466.0" layoutY="17.0" />
+            <Button layoutX="643.0" layoutY="17.0" mnemonicParsing="false" onAction="#onFriendRequestButtonClick" text="Solicitar amistad" />
          </children></AnchorPane>
       <ScrollPane fx:id="scrollPane" layoutX="21.0" layoutY="79.0" prefHeight="363.0" prefWidth="755.0">
          <content>
             <TextFlow fx:id="textFlow" prefHeight="405.0" prefWidth="752.0" />
          </content>
       </ScrollPane>
-      <Button layoutX="711.0" layoutY="482.0" mnemonicParsing="false" onAction="#onSendButtonClick" text="Enviar" />
-      <TextField fx:id="messageTextField" layoutX="27.0" layoutY="482.0" prefHeight="24.0" prefWidth="500.0" promptText="Introduce un mensaje" />
+      <AnchorPane layoutY="461.0" prefHeight="68.0" prefWidth="796.0" style="-fx-background-color: lightgray;">
+         <children>
+            <TextField fx:id="messageTextField" layoutX="27.0" layoutY="22.0" prefHeight="24.0" prefWidth="500.0" promptText="Introduce un mensaje" />
+            <ComboBox fx:id="receiverComboBox" editable="true" layoutX="552.0" layoutY="22.0" prefWidth="150.0" />
+            <Button layoutX="709.0" layoutY="22.0" mnemonicParsing="false" onAction="#onSendButtonClick" text="Enviar" />
+         </children></AnchorPane>
    </children>
 </AnchorPane>
