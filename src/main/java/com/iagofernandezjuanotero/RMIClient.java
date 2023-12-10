@@ -1,3 +1,9 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase principal de cliente RMI
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import javafx.application.Application;
@@ -7,6 +13,7 @@ import javafx.stage.Stage;
 
 import java.rmi.RemoteException;
 
+// Main JavaFX thread, and client application (must extend Application)
 public class RMIClient extends Application {
 
     // Connection instances
@@ -21,6 +28,7 @@ public class RMIClient extends Application {
     @Override
     public void start (Stage mainStage) throws Exception {
 
+        // Creates and sets up the ConnectionSetupView, with its controller
         FXMLLoader connectionSetupLoader = new FXMLLoader(RMIClient.class.getResource("ConnectionSetupView.fxml"));
         Scene connectionSetupScene = new Scene(connectionSetupLoader.load(), 420, 218);
         Stage connectionSetupStage = new Stage();
@@ -28,7 +36,6 @@ public class RMIClient extends Application {
         connectionSetupStage.setScene(connectionSetupScene);
         connectionSetupStage.setResizable(false);
         connectionSetupStage.setOnCloseRequest(event -> {
-            // TODO when exit button clicked
             System.out.println("Se ha cerrado la ventana de establecimiento de conexión");
             System.exit(0);
         });
@@ -37,6 +44,7 @@ public class RMIClient extends Application {
         connectionSetupStage.showAndWait();
         rmiServerInterface = connectionSetupController.getRmiServerInterface();
 
+        // Creates and sets up the LoginView, with its controller
         FXMLLoader loginFxmlLoader = new FXMLLoader(RMIClient.class.getResource("LoginView.fxml"));
         Scene loginScene = new Scene(loginFxmlLoader.load(), 441, 227);
         Stage loginStage = new Stage();
@@ -52,9 +60,11 @@ public class RMIClient extends Application {
         loginController.setRmiServerInterface(rmiServerInterface);
         loginStage.showAndWait();
 
+        // Updates the two interface references
         rmiServerInterface = loginController.getRmiServerInterface();
         rmiClientInterface = loginController.getRmiClientInterface();
 
+        // Creates and sets up the MainView, with its controller
         FXMLLoader mainFxmlLoader = new FXMLLoader(RMIClient.class.getResource("MainView.fxml"));
         Scene mainScene = new Scene(mainFxmlLoader.load(), 796, 529);
         mainStage.setTitle("Aplicación P2P | " + rmiClientInterface.getUsername());

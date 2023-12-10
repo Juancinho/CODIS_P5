@@ -1,24 +1,26 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase datos del cliente
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-// Serializable so it works properly with JavaRMI
 // Acts mostly like a placeholder of all attributes for a given client (when offline)
 // Requires Serializable interface to work with networking data transfers
 public class ClientData implements Serializable {
 
-    private String username;
-    private String passwordHash;
-    private ArrayList<String> pendingSentFriendshipRequests;
-    private ArrayList<String> pendingReceivedFriendshipRequests;
-    private ArrayList<String> addedFriends;
-    private ArrayList<String> whileOfflineMessageStack;
+    // Does not require to save username, as the ArrayList entries are usernames to ClientData objects
+    private final String passwordHash;
+    private final ArrayList<String> pendingSentFriendshipRequests;
+    private final ArrayList<String> pendingReceivedFriendshipRequests;
+    private final ArrayList<String> addedFriends;
+    private final ArrayList<String> whileOfflineMessageStack;
 
-    public ClientData(String username, String passwordHash) {
-
-        this.username = username;
+    public ClientData(String passwordHash) {
         this.passwordHash = passwordHash;
         pendingSentFriendshipRequests = new ArrayList<>();
         pendingReceivedFriendshipRequests = new ArrayList<>();
@@ -26,24 +28,9 @@ public class ClientData implements Serializable {
         whileOfflineMessageStack = new ArrayList<>();
     }
 
-    public String getUsername() {
-
-        return username;
-    }
-
-    public void setUsername(String username) {
-
-        this.username = username;
-    }
-
     public String getPasswordHash() {
 
         return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-
-        this.passwordHash = passwordHash;
     }
 
     public ArrayList<String> getPendingSentFriendshipRequests() {
@@ -51,27 +38,14 @@ public class ClientData implements Serializable {
         return pendingSentFriendshipRequests;
     }
 
-    public void setPendingSentFriendshipRequests(ArrayList<String> pendingSentFriendshipRequests) {
-
-        this.pendingSentFriendshipRequests = pendingSentFriendshipRequests;
-    }
-
     public ArrayList<String> getPendingReceivedFriendshipRequests() {
 
         return pendingReceivedFriendshipRequests;
     }
 
-    public void setPendingReceivedFriendshipRequests(ArrayList<String> pendingReceivedFriendshipRequests) {
-
-        this.pendingReceivedFriendshipRequests = pendingReceivedFriendshipRequests;
-    }
-
     public ArrayList<String> getAddedFriends() {
-        return addedFriends;
-    }
 
-    public void setAddedFriends(ArrayList<String> addedFriends) {
-        this.addedFriends = addedFriends;
+        return addedFriends;
     }
 
     public ArrayList<String> getWhileOfflineMessageStack() {
@@ -79,19 +53,11 @@ public class ClientData implements Serializable {
         return whileOfflineMessageStack;
     }
 
-    public void setWhileOfflineMessageStack(ArrayList<String> whileOfflineMessageStack) {
-
-        this.whileOfflineMessageStack = whileOfflineMessageStack;
-    }
+    // Methods that act like setters and getters but adding or removing elements from Arraylists one by one
 
     public void addFriend(String name) {
 
         addedFriends.add(name);
-    }
-
-    public void removeFriend(String name) {
-
-        addedFriends.remove(name);
     }
 
     public void addPendingRequest(String friendRequester) {
@@ -117,10 +83,5 @@ public class ClientData implements Serializable {
     public void addWhileOfflineMessage(String message) {
 
         whileOfflineMessageStack.add(message);
-    }
-
-    public void removeWhileOfflineMessage(String message) {
-
-        whileOfflineMessageStack.remove(message);
     }
 }

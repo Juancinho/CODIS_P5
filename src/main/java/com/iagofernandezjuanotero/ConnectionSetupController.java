@@ -1,3 +1,9 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase controlador de la vista de configuración de la conexión
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import javafx.event.ActionEvent;
@@ -36,14 +42,11 @@ public class ConnectionSetupController implements Initializable {
         return rmiServerInterface;
     }
 
-    public void setRmiServerInterface(RMIServerInterface rmiServerInterface) {
-
-        this.rmiServerInterface = rmiServerInterface;
-    }
-
+    // Method run when the user clicks the "connect" button
     @FXML
     public void onConnectButtonClick (ActionEvent event) {
 
+        // Uses "localhost" and 1099 as default parameters (those are the ones shown in the UI)
         String hostname;
         if (hostnameTextField.getText().isEmpty()) {
             hostname = "localhost";
@@ -52,14 +55,16 @@ public class ConnectionSetupController implements Initializable {
         }
         int port = portSpinner.getValue();
 
+        // As in other JavaRMI programs already made, creates the registryURL and calls Lookup to get the linked remote object
         String registryURL = "rmi://" + hostname + ":" + port + "/messagingApp";
         try {
+            // Gets the reference
             rmiServerInterface = (RMIServerInterface) Naming.lookup(registryURL);
 
             // The connection was set up correctly, simply exits
             Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
             stage.close();
-        } catch (NotBoundException e) {
+        } catch (NotBoundException e) {     // Exception management, printing errors both to UI and prompt
             System.out.println("Excepción de objeto remoto no encontrado: " + e.getMessage());
             printErrorMessage("No se ha encontrado el objeto remoto");
         } catch (MalformedURLException e) {
@@ -71,6 +76,7 @@ public class ConnectionSetupController implements Initializable {
         }
     }
 
+    // Method that changes the text label (in red colour) showing an error in the UI
     @FXML
     private void printErrorMessage(String message) {
 
@@ -81,6 +87,7 @@ public class ConnectionSetupController implements Initializable {
         }
     }
 
+    // Auxiliary function that removes the focus from the buttons (simply aesthetic purposed)
     @FXML
     public void loseFocus() {
 

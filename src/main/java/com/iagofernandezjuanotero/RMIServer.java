@@ -1,23 +1,31 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase principal del servidor RMI
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+// Simple class that works on console, and sets up the remote object and waits for calls
 public class RMIServer {
 
     public static void main(String[] args) {
 
+        // This code is based on given example by Mr.Lui
         InputStreamReader is = new InputStreamReader(System.in);
         BufferedReader br = new BufferedReader(is);
         String portNum, registryURL;
 
         try {
 
+            // Asks for the port (the server works on localhost)
             System.out.println("\n  *** SERVIDOR RMI ***  \n\n");
             System.out.println("Introduce el puerto para el registro RMI: ");
             portNum = (br.readLine()).trim();
@@ -28,14 +36,12 @@ public class RMIServer {
             registryURL = "rmi://localhost:" + portNum + "/messagingApp";
             Naming.rebind(registryURL, rmiServerImpl);
 
-            //listRegistry(registryURL);
             System.out.println("\nEl servidor está activo. Esperando clientes...\n");
 
             // Actively waits for clients
 
         } catch (Exception e) {
-            //System.out.println("Excepción en el servidor: " + e.getMessage());
-            e.printStackTrace();
+            System.out.println("Excepción en el servidor: " + e.getMessage());
         }
     }
 
@@ -46,18 +52,8 @@ public class RMIServer {
             Registry registry = LocateRegistry.getRegistry(RMIPortNum);
             registry.list();
         } catch (RemoteException e) {
-            Registry registry = LocateRegistry.createRegistry(RMIPortNum);
+            LocateRegistry.createRegistry(RMIPortNum);
         }
     }
-
-    /*private static void listRegistry(String registryURL) throws RemoteException, MalformedURLException {
-
-        System.out.println("El registro '" + registryURL + "' contiene: ");
-
-        String[] names = Naming.list(registryURL);
-        for (String name : names) {
-            System.out.println(name);
-        }
-    }*/
 }
 

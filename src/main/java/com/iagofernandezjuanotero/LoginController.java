@@ -1,3 +1,9 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase controlador de la vista de inicio de sesión
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import javafx.event.ActionEvent;
@@ -39,26 +45,25 @@ public class LoginController implements Initializable {
         return rmiServerInterface;
     }
 
-    public void setRmiClientInterface(RMIClientInterface rmiClientInterface) {
-
-        this.rmiClientInterface = rmiClientInterface;
-    }
-
     public RMIClientInterface getRmiClientInterface() {
 
         return rmiClientInterface;
     }
 
+    // Method called when user clicks de LogIn button
     @FXML
     public void onLoginButtonClick (ActionEvent event) {
 
+        // Extracts the parameters from the text fields
         String username = usernameTextField.getText();
         String password = passwordField.getText();
 
-        if (!isUsernameValid()) {
+        // Does all necessary checks, calling printErrorMessage to show any possible error to user
+        // In any case, it returns, not going further than this conditional clause
+        if (isUsernameInvalid()) {
             printErrorMessage("El nombre de usuario no es válido");
             return;
-        } else if (!isPasswordValid()) {
+        } else if (isPasswordInvalid()) {
             printErrorMessage("La contraseña no es válida");
             return;
         } else {
@@ -79,8 +84,9 @@ public class LoginController implements Initializable {
             }
         }
 
+        // Tries to create the client interface. On success, simply exits
         try {
-            rmiClientInterface = new RMIClientImpl(username, rmiServerInterface.calcHashForGivenPassword(password), rmiServerInterface);
+            rmiClientInterface = new RMIClientImpl(username, rmiServerInterface.calcHashForGivenPassword(password));
             //rmiClientInterface = rmiServerInterface.createNewClient(username, password);
 
             // User successfully logged in to the app
@@ -92,16 +98,18 @@ public class LoginController implements Initializable {
         }
     }
 
+    // Completely analogue to above method, but registering a new user to the database (instead of logging-in an existing one
     @FXML
     public void onRegisterButtonClick (ActionEvent event) {
 
         String username = usernameTextField.getText();
         String password = passwordField.getText();
 
-        if (!isUsernameValid()) {
+        // Again, checks every possible mistyping in data
+        if (isUsernameInvalid()) {
             printErrorMessage("El nombre de usuario no es válido");
             return;
-        } else if (!isPasswordValid()) {
+        } else if (isPasswordInvalid()) {
             printErrorMessage("La contraseña no es válida");
             return;
         } else {
@@ -116,8 +124,9 @@ public class LoginController implements Initializable {
             }
         }
 
+        // And again, creates the client interface (whose reference will be later get from the main JavaFX thread), and exits on success
         try {
-            rmiClientInterface = new RMIClientImpl(username, rmiServerInterface.calcHashForGivenPassword(password), rmiServerInterface);
+            rmiClientInterface = new RMIClientImpl(username, rmiServerInterface.calcHashForGivenPassword(password));
             //rmiClientInterface = rmiServerInterface.createNewClient(username, password);
 
             // User successfully registered in the app
@@ -129,6 +138,7 @@ public class LoginController implements Initializable {
         }
     }
 
+    // Same function that in ConnectionSetupController, prints errors to UI by changing the value of a text component
     @FXML
     private void printErrorMessage(String message) {
 
@@ -139,6 +149,7 @@ public class LoginController implements Initializable {
         }
     }
 
+    // Again, sets the scene focus to the background pane
     @FXML
     public void loseFocus() {
 
@@ -146,18 +157,20 @@ public class LoginController implements Initializable {
         rootPane.requestFocus();
     }
 
-    private boolean isUsernameValid() {
+    // Auxiliary functions that check if the username and password written by the user are valid
+    // This is, they must be non-null and non-empty
+    private boolean isUsernameInvalid() {
 
         String username = usernameTextField.getText();
 
-        return !username.isEmpty();
+        return username.isEmpty();
     }
 
-    private boolean isPasswordValid() {
+    private boolean isPasswordInvalid() {
 
         String password = passwordField.getText();
 
-        return !password.isEmpty();
+        return password.isEmpty();
     }
 
     @Override

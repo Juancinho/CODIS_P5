@@ -1,28 +1,29 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase implementación del cliente RMI
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import javafx.application.Platform;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 
 public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInterface {
 
-    private String username;
-    private String passwordHash;
-    private RMIServerInterface rmiServerInterface;
+    // Declares the username and passwordHash (encrypted in the server), and the mainController reference
+    private final String username;
+    private final String passwordHash;
     private MainController mainController;
 
-    public RMIClientImpl(String username, String passwordHash, RMIServerInterface rmiServerInterface) throws RemoteException {
+    public RMIClientImpl(String username, String passwordHash) throws RemoteException {
 
         super();
 
         this.username = username;
         this.passwordHash = passwordHash;
-        this.rmiServerInterface = rmiServerInterface;
-
-        //server.registerClient(username, passwordHash, this);
-        // This previous line may lead to infinite loop exceptions (work carefully)
     }
 
     @Override
@@ -37,31 +38,25 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
         return passwordHash;
     }
 
-    public MainController getMainController() {
-
-        return mainController;
-    }
-
     @Override
     public void setMainController(MainController mainController) throws RemoteException {
 
         this.mainController = mainController;
     }
 
+    // All the functions underneath just print custom messages for certain situations
+    // They could have been only one function, but this encapsulates the contents and makes it
+    // clearer to understand what the server calls are intended to do in the client side
     @Override
     public void receiveMessage(String sender, String message) throws RemoteException {
 
-        Platform.runLater(() -> {
-            mainController.printToConsole("ENTRADA ('" + username + "' ← '" + sender + "'): " + message);
-        });
+        Platform.runLater(() -> mainController.printToConsole("ENTRADA ('" + username + "' ← '" + sender + "'): " + message));
     }
 
     @Override
     public void sendMessage(String receiver, String message) throws RemoteException {
 
-        Platform.runLater(() -> {
-            mainController.printToConsole("SALIDA ('" + username + "' → '" + receiver + "'): " + message);
-        });
+        Platform.runLater(() -> mainController.printToConsole("SALIDA ('" + username + "' → '" + receiver + "'): " + message));
     }
 
     @Override
@@ -69,6 +64,7 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
 
         Platform.runLater(() -> {
             try {
+                // This, and some other functions, modify data that is printed in the UI boxes, so must update them
                 mainController.updateReceiverComboBox();
             } catch (RemoteException e) {
                 System.out.println("Excepción de acceso remoto: " + e.getMessage());
@@ -95,9 +91,7 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     @Override
     public void notifySentFriendRequest(String requestedClient) throws RemoteException {
 
-        Platform.runLater(() -> {
-            mainController.printToConsole("AMISTAD: Solicitud de amistad enviada correctamente a '" + requestedClient + "'");
-        });
+        Platform.runLater(() -> mainController.printToConsole("AMISTAD: Solicitud de amistad enviada correctamente a '" + requestedClient + "'"));
     }
 
     @Override
@@ -146,9 +140,7 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     @Override
     public void notifyRejectedSentFriendRequest(String requestedClient) throws RemoteException {
 
-        Platform.runLater(() -> {
-            mainController.printToConsole("AMISTAD: '" + requestedClient + "' ha rechazado tu solicitud de amistad");
-        });
+        Platform.runLater(() -> mainController.printToConsole("AMISTAD: '" + requestedClient + "' ha rechazado tu solicitud de amistad"));
     }
 
     @Override
@@ -168,16 +160,12 @@ public class RMIClientImpl extends UnicastRemoteObject implements RMIClientInter
     @Override
     public void printInfo(String message) throws RemoteException {
 
-        Platform.runLater(() -> {
-            mainController.printToConsole("SISTEMA: " + message);
-        });
+        Platform.runLater(() -> mainController.printToConsole("SISTEMA: " + message));
     }
 
     @Override
     public void printError(String message) throws RemoteException {
 
-        Platform.runLater(() -> {
-            mainController.printToConsole("ERROR: " + message);
-        });
+        Platform.runLater(() -> mainController.printToConsole("ERROR: " + message));
     }
 }

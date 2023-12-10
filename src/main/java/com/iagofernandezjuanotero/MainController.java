@@ -1,7 +1,12 @@
+/*
+ * Actividad: Aplicaciones P2P. Clase controlador de la vista principal
+ * Fecha: Miércoles, 29 de noviembre de 2023
+ * Autores: Iago Fernández Perlo y Juan Otero Rivas
+ */
+
 package com.iagofernandezjuanotero;
 
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ChoiceBox;
@@ -17,13 +22,18 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 
-// Must be serializable because of transitivity to MainControllerData (which is indeed serializable for network transfers)
+// Must be serializable, to prevent remote connection problems with JavaRMI
+// This leads to compatibility problems between JavaFX and JavaRMI (there is no API between them)
+// The solution taken was to declare JavaFX as transient (so they are not sent, preventing serialization
+// exceptions), but the references must be updated with extreme caution to prevent null pointers
 public class MainController implements Initializable, Serializable {
 
-    // There are serialization problems with JavaFX components (they are more complex than average Java classes)
-    // It seems compulsory to work with transient attributes and taking care of method calls
+    // Must declare as transient all JavaFX components (those with the tag FXML), as they are more complex
+    // than average Java classes, and can not be serialized by JavaRMI
     @FXML
     private transient AnchorPane rootPane;
 
@@ -45,9 +55,11 @@ public class MainController implements Initializable, Serializable {
     @FXML
     private transient TextFlow textFlow;
 
+    // References to both interfaces
     private RMIServerInterface rmiServerInterface;
     private RMIClientInterface rmiClientInterface;
 
+    // Constant for the maximum number of messages that can be shown in the main UI panel
     private static final int MAX_MESSAGES = 100;
 
     public void setRmiServerInterface(RMIServerInterface rmiServerInterface) {
@@ -55,23 +67,15 @@ public class MainController implements Initializable, Serializable {
         this.rmiServerInterface = rmiServerInterface;
     }
 
-    public RMIServerInterface getRmiServerInterface() {
-
-        return rmiServerInterface;
-    }
-
     public void setRmiClientInterface(RMIClientInterface rmiClientInterface) {
 
         this.rmiClientInterface = rmiClientInterface;
     }
 
-    public RMIClientInterface getRmiClientInterface() {
-
-        return rmiClientInterface;
-    }
-
+    // When accept button is clicked, it gets the value from the choice box next to him, and if the username is valid,
+    // calls the server method where the responsibility of the request acceptation relies on
     @FXML
-    void onAcceptButtonClick(ActionEvent event) throws RemoteException {
+    void onAcceptButtonClick() throws RemoteException {
 
         String requesterClient = pendingRequestsChoiceBox.getValue();
 
@@ -81,8 +85,9 @@ public class MainController implements Initializable, Serializable {
         }
     }
 
+    // Analogue to above, in this case works with the reject button but the same choice box
     @FXML
-    void onRejectButtonClick(ActionEvent event) throws RemoteException {
+    void onRejectButtonClick() throws RemoteException {
 
         String requesterClient = pendingRequestsChoiceBox.getValue();
 
@@ -92,11 +97,13 @@ public class MainController implements Initializable, Serializable {
         }
     }
 
+    // Method called when the user clicks the friend request send button
     @FXML
-    void onFriendRequestButtonClick(ActionEvent event) throws RemoteException {
+    void onFriendRequestButtonClick() throws RemoteException {
 
         String requestedClient = friendRequestText.getText();
 
+        // Does all required checks, and applies the method printError to print messages to the console (errors in this case)
         if (isValidUsername(requestedClient)) {
 
             if (rmiServerInterface.isUsernameTaken(requestedClient)) {
@@ -105,11 +112,14 @@ public class MainController implements Initializable, Serializable {
 
                     // If client has already an incoming friendship request, then simply adds the user
                     if (rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getPendingReceivedFriendshipRequests().contains(requestedClient)) {
+
                         rmiServerInterface.acceptClientRequest(requestedClient, rmiClientInterface.getUsername());
+
                     } else {
+
+                        // If the client username is valid, call the server method that creates the links and stores all the required data
                         rmiServerInterface.createClientRequest(requestedClient, rmiClientInterface.getUsername());
                     }
-
                 } else {
                     rmiClientInterface.printError("No puedes enviarte una solicitud de amistad a ti mismo");
                 }
@@ -119,27 +129,40 @@ public class MainController implements Initializable, Serializable {
         }
     }
 
+    // Method called when button click is pressed (note that these last four methods depend on the value from text fields or choice boxes)
     @FXML
-    void onSendButtonClick(ActionEvent event) throws RemoteException {
+    void onSendButtonClick() throws RemoteException {
 
         String receiver = receiverComboBox.getValue();
         String message = messageTextField.getText();
 
+        // Once again, extracts data from the fields, checks and calls the server method
         if (isValidText(message) && isValidUsername(receiver)) {
 
-            if (rmiServerInterface.isUserOnline(receiver)) {
-                if (!rmiClientInterface.getUsername().equals(receiver)) {
-                    rmiServerInterface.getClientToMessage(receiver).receiveMessage(rmiClientInterface.getUsername(), message);
-                    rmiClientInterface.sendMessage(receiver, message);
+            if(rmiServerInterface.isUsernameTaken(receiver)) {
+
+                if (rmiServerInterface.isUserOnline(receiver)) {
+
+                    if (!rmiClientInterface.getUsername().equals(receiver)) {
+
+                        // In this case, as the message must be sent between user and receiver (clients, p2p) without server participation,
+                        // this client gets the reference to the other client, and calls the receiveMessage() on it. Also calls sendMessage() on itself
+                        rmiServerInterface.getClientToMessage(receiver).receiveMessage(rmiClientInterface.getUsername(), message);
+                        rmiClientInterface.sendMessage(receiver, message);
+
+                    } else {
+                        rmiClientInterface.printError("No puedes enviarte un mensaje a ti mismo");
+                    }
                 } else {
-                    rmiClientInterface.printError("No puedes enviarte un mensaje a ti mismo");
+                    rmiClientInterface.printError("El usuario '" + receiver +"' no está conectado");
                 }
             } else {
-                rmiClientInterface.printError("El usuario '" + receiver +"' no está conectado");
+                rmiClientInterface.printError("El usuario '" + receiver +"' no existe");
             }
         }
     }
 
+    // Classic checkers of non-null and non-empty string values
     private boolean isValidText(String message) {
 
         return message != null && !message.trim().isEmpty();
@@ -157,6 +180,9 @@ public class MainController implements Initializable, Serializable {
         rootPane.requestFocus();
     }
 
+    // Methods that update the choice and combo boxes in the UI. Note that the ComboBox must show all the connected friends (as
+    // the method itself is intended to work with sendMessage(), so it must return valid (online and friend) clients. However,
+    // the ChoiceBox shows all the clients that requested to be friends with the user, but they can be offline (this is a feature of the program)
     @FXML
     public void updatePendingRequestsChoiceBox() throws RemoteException {
 
@@ -166,7 +192,19 @@ public class MainController implements Initializable, Serializable {
     @FXML
     public void updateReceiverComboBox() throws RemoteException {
 
-        receiverComboBox.setItems(FXCollections.observableArrayList(rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getAddedFriends()));
+        ArrayList<String> onlineAddedFriends = rmiServerInterface.getClientData(rmiClientInterface.getUsername()).getAddedFriends();
+
+        // Must use an iterator. With a loop, it falls into concurrent modification exceptions
+        Iterator<String> iterator = onlineAddedFriends.iterator();
+        while (iterator.hasNext()) {
+            String friend = iterator.next();
+
+            if (!rmiServerInterface.isUserOnline(friend)) {
+                iterator.remove();
+            }
+        }
+
+        receiverComboBox.setItems(FXCollections.observableArrayList(onlineAddedFriends));
     }
 
     // Method that prints data in the console (both messages from/to other users or related to the program itself)
@@ -189,6 +227,8 @@ public class MainController implements Initializable, Serializable {
         }
     }
 
+    // Similar to above, but gets the data from the ArrayList of Strings stored in the ClientData for a client (class on which
+    // the whole database is based). It does not print time trace, and prints "OFFLINE" instead.
     @FXML
     public void printWhileOfflineMessages() throws RemoteException {
 
