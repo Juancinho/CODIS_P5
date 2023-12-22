@@ -25,14 +25,19 @@ public class RMIServer {
 
         try {
 
-            // Asks for the port (the server works on localhost)
             System.out.println("\n  *** SERVIDOR RMI ***  \n\n");
-            System.out.println("Introduce el puerto para el registro RMI: ");
+
+            // Tries to connect to the database to get stored data
+            RMIServerImpl rmiServerImpl = new RMIServerImpl();
+            rmiServerImpl.readDatabase();
+
+            // Asks for the port (the server works on localhost)
+            System.out.println("\nIntroduce el puerto para el registro RMI: ");
             portNum = (br.readLine()).trim();
             int RMIPortNum = Integer.parseInt(portNum);
             startRegistry(RMIPortNum);
 
-            RMIServerImpl rmiServerImpl = new RMIServerImpl();
+            // Sets up the remote object
             registryURL = "rmi://localhost:" + portNum + "/messagingApp";
             Naming.rebind(registryURL, rmiServerImpl);
 

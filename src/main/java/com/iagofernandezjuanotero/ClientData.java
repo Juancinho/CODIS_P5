@@ -13,14 +13,24 @@ import java.util.ArrayList;
 // Requires Serializable interface to work with networking data transfers
 public class ClientData implements Serializable {
 
-    // Does not require to save username, as the ArrayList entries are usernames to ClientData objects
+    // Does not require username as it is stored as key in the hashmap used by the server remote interface
     private final String passwordHash;
     private final ArrayList<String> pendingSentFriendshipRequests;
     private final ArrayList<String> pendingReceivedFriendshipRequests;
     private final ArrayList<String> addedFriends;
     private final ArrayList<String> whileOfflineMessageStack;
 
+    public ClientData(String passwordHash, ArrayList<String> pendingSentFriendshipRequests, ArrayList<String> pendingReceivedFriendshipRequests, ArrayList<String> addedFriends, ArrayList<String> whileOfflineMessageStack) {
+
+        this.passwordHash = passwordHash;
+        this.pendingSentFriendshipRequests = pendingSentFriendshipRequests;
+        this.pendingReceivedFriendshipRequests = pendingReceivedFriendshipRequests;
+        this.addedFriends = addedFriends;
+        this.whileOfflineMessageStack = whileOfflineMessageStack;
+    }
+
     public ClientData(String passwordHash) {
+
         this.passwordHash = passwordHash;
         pendingSentFriendshipRequests = new ArrayList<>();
         pendingReceivedFriendshipRequests = new ArrayList<>();
@@ -60,12 +70,12 @@ public class ClientData implements Serializable {
         addedFriends.add(name);
     }
 
-    public void addPendingRequest(String friendRequester) {
+    public void addReceivedPendingRequest(String friendRequester) {
 
         pendingReceivedFriendshipRequests.add(friendRequester);
     }
 
-    public void removePendingRequest(String friendRequester) {
+    public void removeReceivedPendingRequest(String friendRequester) {
 
         pendingReceivedFriendshipRequests.remove(friendRequester);
     }
@@ -84,4 +94,8 @@ public class ClientData implements Serializable {
 
         whileOfflineMessageStack.add(message);
     }
+
+    // Related to file management methods
+
+
 }

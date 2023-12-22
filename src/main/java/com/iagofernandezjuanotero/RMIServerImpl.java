@@ -11,6 +11,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,8 +95,9 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
         // The clients store incoming requests and outgoing requests, that must be always worked on in pairs
         // (this is, if a client has one new incoming request, there must be another client with a new outgoing request)
-        userDatabase.get(requestedClient).addPendingRequest(requesterClient);
+        userDatabase.get(requestedClient).addReceivedPendingRequest(requesterClient);
         userDatabase.get(requesterClient).addSentPendingRequest(requestedClient);
+        createClientRequestOnDatabase(requestedClient, requesterClient);
 
         // Checks whether the user is online or not, and if there is an active request already
         if (isUserOnline(requestedClient)) {
@@ -116,14 +121,51 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
         }
     }
 
+    private void createClientRequestOnDatabase(String requestedClient, String requesterClient) {
+
+        try (Connection connection = DBConnection.getConnection()) {
+
+            // Works on the client who receives the request
+
+            // SQL query to add the pending request to the user
+            String requestedQuery = "UPDATE client SET pending_received_friendship_requests = pending_received_friendship_requests || ? WHERE username = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(requestedQuery)) {
+
+                preparedStatement.setString(1, "," + requesterClient);  // Adds comma if there are no existing elements
+                preparedStatement.setString(2, requestedClient);
+
+                // Executes the query
+                preparedStatement.executeUpdate();
+            }
+
+            // Works on the client who sends the request
+            // Completely analogue to the code above
+
+            String requesterQuery = "UPDATE client SET pending_sent_friendship_requests = pending_sent_friendship_requests || ? WHERE username = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(requesterQuery)) {
+
+                preparedStatement.setString(1, "," + requestedClient);  // Adds comma if there are no existing elements
+                preparedStatement.setString(2, requesterClient);
+
+                preparedStatement.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Excepción de sql: " + e.getMessage());
+        }
+    }
+
     // Same as above. The only major change is that in this case the requester (that one client who sent the request)
     // may be offline at the moment the requested (the request receiver) rejects it (accepts it, for the next method)
     // so the message must be stored in the database object for that client, as the client is not available in onlineClients
     @Override
     public void rejectClientRequest(String requestedClient, String requesterClient) throws RemoteException {
 
-        userDatabase.get(requestedClient).removePendingRequest(requesterClient);
+        userDatabase.get(requestedClient).removeReceivedPendingRequest(requesterClient);
         userDatabase.get(requesterClient).removeSentPendingRequest(requestedClient);
+        removeClientRequestOnDatabase(requestedClient, requesterClient);
 
         if (isUserOnline(requesterClient)) {
 
@@ -140,13 +182,15 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     @Override
     public void acceptClientRequest(String requestedClient, String requesterClient) throws RemoteException {
 
-        userDatabase.get(requestedClient).removePendingRequest(requesterClient);
+        userDatabase.get(requestedClient).removeReceivedPendingRequest(requesterClient);
         userDatabase.get(requesterClient).removeSentPendingRequest(requestedClient);
+        removeClientRequestOnDatabase(requestedClient, requesterClient);
 
         // Friendship is biyective, so both vectors must be linked (a -> b, b -> a)
         // (We could even make this method synchronized to completely make sure this, but seems excessive)
         userDatabase.get(requestedClient).addFriend(requesterClient);
         userDatabase.get(requesterClient).addFriend(requestedClient);
+        addFriendOnDatabase(requestedClient, requesterClient);
 
         if (isUserOnline(requesterClient)) {
 
@@ -157,6 +201,76 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
             connectedClients.get(requestedClient).notifyAcceptedReceivedFriendRequest(requesterClient);
             getClientData(requesterClient).addWhileOfflineMessage("AMISTAD: '" + requestedClient + "' ha aceptado tu solicitud de amistad. Ahora sois amigos");
+        }
+    }
+
+    private void removeClientRequestOnDatabase(String requestedClient, String requesterClient) {
+
+        try (Connection connection = DBConnection.getConnection()) {
+
+            // Works on the client who receives the request
+
+            // SQL query to remove the specified request from the user's pending requests
+            String requestedQuery = "UPDATE client SET pending_received_friendship_requests = array_remove(pending_received_friendship_requests, ?) WHERE username = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(requestedQuery)) {
+
+                // Adjusts parameters in the correct order
+                preparedStatement.setString(1, requesterClient);
+                preparedStatement.setString(2, requestedClient);
+
+                // Executes the query
+                preparedStatement.executeUpdate();
+            }
+
+            // Works on the client who sends the request
+            // Completely analogue to the code above
+
+            String requesterQuery = "UPDATE client SET pending_sent_friendship_requests = array_remove(pending_sent_friendship_requests, ?) WHERE username = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(requesterQuery)) {
+
+                preparedStatement.setString(1, requestedClient);
+                preparedStatement.setString(2, requesterClient);
+
+                preparedStatement.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Excepción de sql: " + e.getMessage());
+        }
+    }
+
+    private void addFriendOnDatabase(String requestedClient, String requesterClient) {
+
+        try (Connection connection = DBConnection.getConnection()) {
+
+            // Works on the client who receives the request
+
+            String requestedQuery = "UPDATE client SET added_friends = added_friends || ? WHERE username = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(requestedQuery)) {
+
+                preparedStatement.setString(1, "," + requesterClient);
+                preparedStatement.setString(2, requestedClient);
+
+                preparedStatement.executeUpdate();
+            }
+
+            // Works on the client who sends the request
+
+            String requesterQuery = "UPDATE client SET added_friends = added_friends || ? WHERE username = ?";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(requesterQuery)) {
+
+                preparedStatement.setString(1, "," + requestedClient);
+                preparedStatement.setString(2, requesterClient);
+
+                preparedStatement.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Excepción de sql: " + e.getMessage());
         }
     }
 
@@ -218,11 +332,146 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
     // For password encryption purposes, creates the salt seed on server initialization
     private byte[] generateSalt() {
 
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
+        byte[] salt = null;
+
+        try (Connection connection = DBConnection.getConnection()) {
+
+            // SQL query to retrieve the value from the "salt" column of the "salt" table (unique for encryption purposes)
+            String query = "SELECT salt FROM salt";
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Check if there is any result
+                if (resultSet.next()) {
+
+                    // Return the value obtained
+                    salt = resultSet.getBytes("salt");
+                }
+            } catch (SQLException e) {
+                System.out.println("Excepción de sql: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            System.out.println("Excepción de sql: " + e.getMessage());
+        }
+
+        // If the salt was not restored from the database, it generates a new one (this will make the previously stored passwords unreachable)
+        if (salt == null) {
+
+            System.out.println("No se ha conseguido el valor de 'salt', se genera uno nuevo");
+
+            // No results found. Generates a new salt
+            SecureRandom random = new SecureRandom();
+            salt = new byte[16];
+            random.nextBytes(salt);
+
+            // Finally, if there was no salt stored in the database, it stores the newly created one
+            try (Connection connection = DBConnection.getConnection()) {
+
+                // Erases the previous possible values in the table
+                String deleteQuery = "DELETE FROM salt";
+                try (PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery)) {
+                    deleteStatement.executeUpdate();
+                }
+
+                // Inserts the newly calculated salt to the table
+                String query = "INSERT INTO salt (salt) VALUES (?);\n";
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+                    preparedStatement.setBytes(1, salt);
+                    preparedStatement.executeUpdate();
+
+                } catch (SQLException e) {
+                    System.out.println("Excepción de sql: " + e.getMessage());
+                }
+
+            } catch (SQLException e) {
+                System.out.println("Excepción de sql: " + e.getMessage());
+            }
+        }
 
         return salt;
+    }
+
+    public void readDatabase() {
+
+        System.out.println("Leyendo la base de datos...");
+
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            connection = DBConnection.getConnection();
+
+            String databaseQuery = "SELECT * FROM client";
+            preparedStatement = connection.prepareStatement(databaseQuery);
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+
+                String username = resultSet.getString("username");
+                String passwordHash = resultSet.getString("password_hash");
+                ArrayList<String> pendingSentFriendshipRequests = getListFromDB(resultSet, "pending_sent_friendship_requests");
+                ArrayList<String> pendingReceivedFriendshipRequests = getListFromDB(resultSet, "pending_received_friendship_requests");
+                ArrayList<String> addedFriends = getListFromDB(resultSet, "added_friends");
+                ArrayList<String> whileOfflineMessageStack = getListFromDB(resultSet, "while_offline_message_stack");
+
+                // Creates the ClientData object and adds it to the dynamic database managed by this class
+                ClientData clientData = new ClientData(passwordHash, pendingSentFriendshipRequests,
+                        pendingReceivedFriendshipRequests, addedFriends, whileOfflineMessageStack);
+                userDatabase.put(username, clientData);
+            }
+        } catch (SQLException e) {
+            System.out.println("Excepción de sql: " + e.getMessage());
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    System.out.println("Excepción de sql: " + e.getMessage());
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    System.out.println("Excepción de sql: " + e.getMessage());
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    System.out.println("Excepción de sql: " + e.getMessage());
+                }
+            }
+        }
+
+        if (userDatabase.isEmpty()) {
+            System.out.println("No se ha leído ningún dato de la base de datos");
+        }
+    }
+
+    private ArrayList<String> getListFromDB(ResultSet resultSet, String columnName) throws SQLException {
+
+        ArrayList<String> list = new ArrayList<>();
+
+        // Retrieve the comma-separated string from the database
+        String dbList = resultSet.getString(columnName);
+
+        if (dbList != null) {
+
+            // Split the database string into a list of strings
+            String[] elements = dbList.split(",");
+
+            // Trim each element and add it to the list
+            for (String element : elements) {
+                list.add(element.trim());
+            }
+        }
+
+        return list;
     }
 
     // Custom thread used for the registration of a new client
@@ -251,6 +500,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
             if (!userDatabase.containsKey(name)) {
                 ClientData clientData = new ClientData(passwordHash);
                 userDatabase.put(name, clientData);
+                addClientToDatabase();
                 System.out.println("[NUEVO] Se ha registrado el cliente '" + name + "' en la base de datos");
                 isNewClient = true;
             }
@@ -298,6 +548,26 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
             // The thread prints some data to the server (so it can follow the flow of the connection and disconnection of users)
             // but cannot access to the messages, as the program is intended to be peer to peer
             System.out.println("-> '" + name + "' se ha conectado");
+        }
+
+        private void addClientToDatabase() {
+
+            try (Connection connection = DBConnection.getConnection()) {
+
+                // SQL query to insert a new client into the table (client, the only one worked on within this program)
+                String query = "INSERT INTO client (username, password_hash) VALUES (?, ?)";
+
+                try (PreparedStatement statement = connection.prepareStatement(query)) {
+
+                    statement.setString(1, name);
+                    statement.setString(2, passwordHash);
+
+                    statement.executeUpdate();
+                }
+
+            } catch (SQLException e) {
+                System.out.println("Excepción de sql: " + e.getMessage());
+            }
         }
     }
 }
