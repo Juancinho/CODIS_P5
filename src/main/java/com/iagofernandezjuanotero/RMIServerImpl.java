@@ -128,11 +128,11 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
             // Works on the client who receives the request
 
             // SQL query to add the pending request to the user
-            String requestedQuery = "UPDATE client SET pending_received_friendship_requests = pending_received_friendship_requests || ? WHERE username = ?";
+            String requestedQuery = "UPDATE client SET pending_received_friendship_requests = array_append(pending_received_friendship_requests, ?) WHERE username = ?";
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(requestedQuery)) {
 
-                preparedStatement.setString(1, "," + requesterClient);  // Adds comma if there are no existing elements
+                preparedStatement.setString(1, requesterClient);
                 preparedStatement.setString(2, requestedClient);
 
                 // Executes the query
@@ -142,11 +142,11 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
             // Works on the client who sends the request
             // Completely analogue to the code above
 
-            String requesterQuery = "UPDATE client SET pending_sent_friendship_requests = pending_sent_friendship_requests || ? WHERE username = ?";
+            String requesterQuery = "UPDATE client SET pending_sent_friendship_requests = array_append(pending_sent_friendship_requests, ?) WHERE username = ?";
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(requesterQuery)) {
 
-                preparedStatement.setString(1, "," + requestedClient);  // Adds comma if there are no existing elements
+                preparedStatement.setString(1, requestedClient);
                 preparedStatement.setString(2, requesterClient);
 
                 preparedStatement.executeUpdate();
@@ -247,11 +247,11 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
             // Works on the client who receives the request
 
-            String requestedQuery = "UPDATE client SET added_friends = added_friends || ? WHERE username = ?";
+            String requestedQuery = "UPDATE client SET added_friends = array_append(added_friends, ?) WHERE username = ?";
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(requestedQuery)) {
 
-                preparedStatement.setString(1, "," + requesterClient);
+                preparedStatement.setString(1, requesterClient);
                 preparedStatement.setString(2, requestedClient);
 
                 preparedStatement.executeUpdate();
@@ -259,11 +259,11 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
             // Works on the client who sends the request
 
-            String requesterQuery = "UPDATE client SET added_friends = added_friends || ? WHERE username = ?";
+            String requesterQuery = "UPDATE client SET added_friends = array_append(added_friends, ?) WHERE username = ?";
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(requesterQuery)) {
 
-                preparedStatement.setString(1, "," + requestedClient);
+                preparedStatement.setString(1, requestedClient);
                 preparedStatement.setString(2, requesterClient);
 
                 preparedStatement.executeUpdate();
