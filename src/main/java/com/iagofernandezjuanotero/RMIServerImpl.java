@@ -104,6 +104,7 @@ public class RMIServerImpl extends UnicastRemoteObject implements RMIServerInter
 
             if (activePendingRequest) {
                 getClientToMessage(requesterClient).printError("Ya hay una solicitud de amistad activa a ese usuario");
+
             } else {
                 // It must notify both clients (one that sent the request, and another one that received it)
                 connectedClients.get(requesterClient).notifySentFriendRequest(requestedClient);
